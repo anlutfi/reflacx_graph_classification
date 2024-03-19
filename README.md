@@ -7,7 +7,7 @@ Cada ponto do REFLACX contem 5 atributos relevantes, em verde na imagem. São el
 
 O trabalho de enriquecimento de dados realizado até o momento --em azul-- foi o de dividir a transcrição em frases e, analogamente, dividir as fixações do olhar para cada uma destas frases.
 
-![](reflacx_structure.png)
+![](readme_files/reflacx_structure.png)
 
 O próximo passo nesta pesquisa é tratar cada um desses grupos de fixações por frase como um grafo, para que o diagnóstico das anomalias seja aprendido por uma Graph Convolutional Network(GCN).
 
@@ -28,7 +28,7 @@ Para a modelagem desta estrutura de dados, descrita mais adiante, foi necessári
 
 Para o vértice em si, 3 grandezas foram consideradas relevantes: o tempo que o radiologista repousou o olhar; a posição daquela observação em relação ao tórax; e a região da imagem que se observou naquela fixação. O tempo se obtem facilmente pelo atributo 1 descrito acima. A posição relativa ao tórax pode ser obtida transformando a posição do espaço da imagem para o espaço da bounding box do torax, normalizando-a para [0,1]. Já a região da imagem considerada observada é importante para feature extraction. Seguindo o método do próprio código do REFLACX para a geração de heatmaps, a região observada em uma determinada fixação é representada por uma distribuição normal com média igual à posição da fixação e desvio padrão igual resolução angular (item 4 acima). Sendo assim, o recorte da radiografia a ser usado para representar uma fixação pode ser definido por N = número de desvios padrões que se deseja considerar.
 
-![](nodes.png)
+![](readme_files/nodes.png)
 
 ### Feature Extraction
 
@@ -115,11 +115,11 @@ for line in example:
     
 
 
-![](feature_grid.png)
+![](readme_files/feature_grid.png)
 
 Se torna necessário determinar, para cada fixation e sua respectiva região de atenção, quais regiões considerar
 
-![](feature_grid_fixation.png)
+![](readme_files/feature_grid_fixation.png)
 
 O crop da fixation está localizado em mais de uma região (quanto mais distante for o zoom, mais regiões). Para determinar um array de features para este ponto, faz-se uma média das features de cada região que o compreende, ponderada pelas áreas correspondentes. O resultado é um tensor de 1024 X 1, do mesmo formato das features extraídas da DensNet, porém só considerando as regiões relevantes para uma fixation
 
@@ -147,7 +147,7 @@ Já para as arestas, outras 3 medidas foram consideradas até o momento:
 2. Euclidean Edges: a distância euclideana entre duas observações, com peso da aresta maior para vértices mais próximos. Como cada vértice possui sua posição (x, y) normalizada para [0, 1], o peso da aresta é 2^0.5 - distância.
 3. IOU edges: a similaridade entre as regiões da imagem obtidas entre duas fixações. Dois vértices podem estar próximos em distância, mas, devido a possíveis diferenças do nível de zoom a cada fixação, não possuirem muita área da imagem em comum. O peso da aresta é dado pela IOU das imagens de ambos os vértices
 
-![](edges.png)
+![](readme_files/edges.png)
 
 O grafo terá arestas de todos os três tipos, com 3 matrizes de adjacência. Talvez seja interessante considerar uma forma de consolidá-las em uma só para a implementação.
 
