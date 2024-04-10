@@ -22,9 +22,13 @@ class FeatureExtractor:
     def get_all_fixations_features(self, reflacx_sample):
         pass
 
-    def get_reflacx_img_features(self, reflacx_sample, to_numpy=False):
+    def get_reflacx_img_features(self,
+                                 reflacx_sample,
+                                 to_numpy=False,
+                                 mean_features=None):
         return self.get_img_features(reflacx_sample.get_dicom_img(),
-                                     to_numpy=to_numpy)
+                                     to_numpy=to_numpy,
+                                     mean_features=mean_features)
     
     def get_reflacx_avg_features(self, reflacx_meta, to_numpy=False):
         all_features = []
