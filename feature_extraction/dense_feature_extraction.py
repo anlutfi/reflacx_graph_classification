@@ -86,9 +86,11 @@ class DenseFeatureExtractor(FeatureExtractor):
         return fixation_pos, fixation_crop
     
     
-    def get_img_features(self, img, to_numpy=False):
+    def get_img_features(self, img, to_numpy=False, mean_features=None):
         img = self.transform_img(img)
         result = self.model.features(img[None,...])[0]
+        if mean_features is not None:
+            result -= mean_features
         return result.detach().numpy() if to_numpy else result
     
 
@@ -99,10 +101,13 @@ class DenseFeatureExtractor(FeatureExtractor):
                               img_features=None,
                               img=None,
                               stdevs=1,
-                              img_size=None):
+                              img_size=None,
+                              mean_features=None):
         assert img_features is not None or img is not None
         if img_features is None:
-            img_features = self.get_img_features(img, to_numpy=True)
+            img_features = self.get_img_features(img,
+                                                 to_numpy=True,
+                                                 mean_features=mean_features)
         
         trans_fix = self.transform_fixation(fixation_pos,
                                             ang_x,
@@ -137,7 +142,7 @@ class DenseFeatureExtractor(FeatureExtractor):
         # calculate intersection between fixation crop
         # and each of the feature regions
         result = np.zeros(img_features.shape[0], dtype=img_features.dtype)
-        
+
         for i in range(int(tl[0]), int(tl[0]) + h_region_count):
             for j in range(int(tl[1]), int(tl[1]) + v_region_count):
                 xmin = max(tl[0], i)
@@ -148,16 +153,19 @@ class DenseFeatureExtractor(FeatureExtractor):
                 coef = (xmax - xmin) * (ymax - ymin) / crop_area
                 result = np.sum([result,
                                  img_features[:, i, j] * coef],
-                                axis=0)
+                                 axis=0)
                 
         return result
     
 
     def get_all_fixations_features(self,
                                    reflacx_sample,
-                                   stdevs=1):
+                                   stdevs=1,
+                                   mean_features=None):
         img = reflacx_sample.get_dicom_img()
-        img_features = self.get_img_features(img, to_numpy=True)
+        img_features = self.get_img_features(img,
+                                             to_numpy=True,
+                                             mean_features=mean_features)
         result = {}
 
         for i, fixation in enumerate(reflacx_sample.get_fixations()):
@@ -168,7 +176,8 @@ class DenseFeatureExtractor(FeatureExtractor):
                                                       ang_x,
                                                       ang_y,
                                                       img_features=img_features,
-                                                      stdevs=stdevs)
+                                                      stdevs=stdevs,
+                                                      mean_features=mean_features)
             if fix_features is not None:
                 result[i] = fix_features
         return result
