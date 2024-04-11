@@ -53,6 +53,7 @@ class FixationNode:
                                                       fixation['position_y']),
                                                       ang_x,
                                                       ang_y,
+                                                      img=img,
                                                       img_features=img_features,
                                                       std_devs=std_devs)
         
