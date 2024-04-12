@@ -6,10 +6,19 @@ import torch
 from feature_extraction.feature_extraction import FeatureExtractor
 
 class DenseFeatureExtractor(FeatureExtractor):
+    """Class for extracting image/fixation features from DICOM chest xray images
+    using DensNet.
+    This class is only documented to the extent it differs from its superclass.
+    Check FeatureExtractor documentation also
+    """
     def __init__(self,
                  model_url = "densenet121-res224-mimic_ch",
                  resize=224):
-        super().__init__(model_url)
+        """Loads DenseNet weights specified by param:model_url
+        param:resize is the image dimensions expected by the model
+        """
+        super().__init__()
+        self.model = xrv.models.DenseNet(weights=model_url)
         self.resize = resize
         self.last_img_size = None
 
@@ -28,13 +37,12 @@ class DenseFeatureExtractor(FeatureExtractor):
         img = img[starty:starty + crop_size, startx:startx + crop_size]
 
         # resize
-        img = cv2.resize(img,
-                         (self.resize, self.resize),
-                         interpolation=cv2.INTER_AREA
-                        ).reshape(1, self.resize, self.resize).astype(np.float32)
+        result = cv2.resize(img,
+                            (self.resize, self.resize),
+                            interpolation=cv2.INTER_AREA
+                           ).reshape(1, self.resize, self.resize).astype(np.float32)
         
-        result = torch.from_numpy(img)
-        return result.detach().numpy()[0,:,:] if to_numpy else result
+        return result if to_numpy else torch.from_numpy(result)
         
     
     def transform_fixation(self,
@@ -44,6 +52,11 @@ class DenseFeatureExtractor(FeatureExtractor):
                            stdevs=1,
                            img_size=None,
                            normalize=False):
+        """Calculates a fixation's position in a transformed image.
+        if an original image size (param:image_size) is not provided,
+        it uses the last processed image's size instead, if available. Throws an assertion error otherwise.
+        if param:normalize is True, returns position in a ([0, 1], [0, 1]) space
+        """
         assert img_size is not None or self.last_img_size is not None
         if img_size is None:
             y, x = self.last_img_size
@@ -54,7 +67,7 @@ class DenseFeatureExtractor(FeatureExtractor):
         startx = x // 2 - (crop_size // 2)
         starty = y // 2 - (crop_size // 2)
 
-        # if fixation out of bounds, adjusto to border
+        # if fixation out of bounds, adjust to border
         fixation_pos = (max(0, fixation_pos[0] - startx),
                         max(0, fixation_pos[1] - starty))
         
@@ -102,7 +115,8 @@ class DenseFeatureExtractor(FeatureExtractor):
                               img=None,
                               stdevs=1,
                               img_size=None,
-                              mean_features=None):
+                              mean_features=None,
+                              to_numpy=False):
         assert img_features is not None or img is not None
         if img_features is None:
             img_features = self.get_img_features(img,
@@ -155,7 +169,7 @@ class DenseFeatureExtractor(FeatureExtractor):
                                  img_features[:, i, j] * coef],
                                  axis=0)
                 
-        return result
+        return result if to_numpy else torch.from_numpy(result)
     
 
     def get_all_fixations_features(self,
@@ -178,7 +192,7 @@ class DenseFeatureExtractor(FeatureExtractor):
                                                       img_features=img_features,
                                                       stdevs=stdevs,
                                                       mean_features=mean_features)
-            if fix_features is not None:
+            if fix_features is not None: #TODO log when this happens
                 result[i] = fix_features
         return result
     
