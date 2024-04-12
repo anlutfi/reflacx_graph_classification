@@ -92,9 +92,10 @@ class GazeTrackingGraph:
         self.calc_edge()
 
 
-    def calc_edge(self):
+    def calc_edge(self, self_edges=True):
         """Classes inheriting GazeTrackingGraph need
-        to fill a adjacency matrix (self.adj_mat)
+        to fill a adjacency matrix (self.adj_mat).
+        param:self_edges determine whether or not to add edges from a node to itself
         """
         pass
 

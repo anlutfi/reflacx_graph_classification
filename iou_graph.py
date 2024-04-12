@@ -25,7 +25,7 @@ class IOUGraph(GazeTrackingGraph):
         self.name = 'IOUGraph_{}_{}'.format(self.dicom_id, self.reflacx_id)
 
 
-    def calc_edge(self):
+    def calc_edge(self, self_edges=True):
         """Edges are 0 for non-intersecting fixation crops and 1 for equal,
         based on their intersection over union.
         """
@@ -34,7 +34,7 @@ class IOUGraph(GazeTrackingGraph):
         for i, node_i in enumerate(nodes):
             for j, node_j in enumerate(nodes):
                 if i == j:
-                    result[i][j] = 1.0 # TODO review self edges
+                    result[i][j] = 1.0 if self_edges else 0.0
                     continue
                 xA = max(node_i.viewed_x_min, node_j.viewed_x_min)
                 yA = max(node_i.viewed_y_min, node_j.viewed_y_min)
