@@ -73,7 +73,8 @@ class ScanPathGraph:
             if node is not None:
                 self.nodes.append(node)
             else:
-                print('Void Node at {}'.format(i))
+                #print('Void Node at {}'.format(i))
+                pass #TODO add in logging
         
         self.adj_mat = calc_edge(self.nodes)
 
