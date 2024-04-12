@@ -5,6 +5,8 @@ from gaze_tracking_graph import GazeTrackingGraph
 
 
 class IOUGraph(GazeTrackingGraph):
+    """Graph with edges porportional to IOU area between to fixations' crops.
+    """
     def __init__(self,
                  dicom_id,
                  reflacx_id,
@@ -24,6 +26,9 @@ class IOUGraph(GazeTrackingGraph):
 
 
     def calc_edge(self):
+        """Edges are 0 for non-intersecting fixation crops and 1 for equal,
+        based on their intersection over union.
+        """
         nodes = self.nodes
         result = [[0.0 for j in range(len(nodes))] for i in range(len(nodes))]
         for i, node_i in enumerate(nodes):

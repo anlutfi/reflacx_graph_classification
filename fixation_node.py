@@ -1,4 +1,6 @@
 class FixationNode:
+    """A graph's node representing a REFLACX fixation
+    """
     @staticmethod
     def new_node(id,
                  fixation,
@@ -7,6 +9,16 @@ class FixationNode:
                  feature_extractor,
                  img_features=None,
                  stdevs=1):
+        """Transforms REFLACX fixation data into a node.
+        if param:fixation's position lies outside of the xary's chest bounding box (param:chest_bb),
+        returns None, as it's an invalid node. For this reason, this function should be called instead of the constructor.
+
+        param:img is the reflacx xray, used by param:feature_extractor to obtain a tensor
+        of image features. If features were already calculated, pass them to param:img_features, to avoid calculation at each fixation.
+
+        param:stdevs is the number of standard deviations to be considered to determine
+            the fixation's crop.
+        """# TODO, define this as class' __call__()
         norm_x = ((fixation['x_position'] - chest_bb['xmin']) /
                   (chest_bb['xmax'] - chest_bb['xmin']))
         norm_y = ((fixation['y_position'] - chest_bb['ymin']) /
@@ -33,6 +45,8 @@ class FixationNode:
                   feature_extractor,
                   img_features=None,
                   stdevs=1):
+        """See FixationNode.new_node()
+        """
         self.id = id
         self.duration = (fixation['timestamp_end_fixation'] -
                          fixation['timestamp_start_fixation'])
@@ -61,6 +75,9 @@ class FixationNode:
 
     
     def get_csv_header(self):
+        """returns a header of class attributes' names
+        to be used as header of csv file
+        """
         return "id, norm_x, norm_y, duration, features"
 
     

@@ -4,9 +4,9 @@ from pyvis.network import Network
 from os.path import sep
 
 class GazeTrackingGraph:
-    def calc_edge(self):
-        pass
-    
+    """Represents a REFLACX datapoint as a graph of its gaze fixations
+    Nodes are each fixation and edges are to be defined by inheritance
+    """
     def __init__(self,
                  dicom_id,
                  reflacx_id,
@@ -15,6 +15,13 @@ class GazeTrackingGraph:
                  stdevs=1,
                  feature_extractor=DenseFeatureExtractor(),
                  mean_features=None):
+        """param:reflacx_sample is a REFLACX datapoint. If none is provided,
+        it will be loaded from param:metadata
+
+        The region of the image observed by a fixation is a gaussian bell with the fixation's position as the mean (center point), extending for a number of standard deviations(param:stdevs). 1 standard deviation = 1 degree.
+
+        if param:mean_features is provided, it will be subtracted from all feature extractions (mean normalization).
+        """
         assert reflacx_sample is not None or metadata is not None
         if reflacx_sample is None:
             reflacx_sample = metadata.get_sample(dicom_id, reflacx_id)
@@ -81,10 +88,21 @@ class GazeTrackingGraph:
                 #print('Void Node at {}'.format(i))
                 pass #TODO add in logging
         
+        self.adj_mat = None
         self.calc_edge()
 
 
+    def calc_edge(self):
+        """Classes inheriting GazeTrackingGraph need
+        to fill a adjacency matrix (self.adj_mat)
+        """
+        pass
+
+    
     def draw(self, out_dir= None, fname=None, color='#88cccc', edge_labels=True):
+        """Draws the graph and saves it as a html file
+        in param:out_dir under param:fname
+        """
         g = Network(notebook=True, cdn_resources='remote')
         g.toggle_physics(False)
 
@@ -127,6 +145,7 @@ class GazeTrackingGraph:
             for node in self.nodes:
                 f.write(str(node))
 
+    
     def get_edges_csv(self, csv_path):
         #TODO replace with pandas
         with open(csv_path, 'w') as f:
@@ -136,9 +155,11 @@ class GazeTrackingGraph:
                     if self.adj_mat[i, j] != 0:
                         f.write("{}, {}, {}".format(i, j, self.adj_mat[i, j]))
 
+    
     def get_graph_csv(self):
         pass #TODO
 
+    
     def __str__(self):
         ids = '{}  dicom-id: {}  reflacx-id: {}'.format(self.name,
                                                         self.dicom_id,

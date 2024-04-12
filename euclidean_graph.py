@@ -5,6 +5,8 @@ from gaze_tracking_graph import GazeTrackingGraph
 
 
 class EuclideanGraph(GazeTrackingGraph):
+    """Complete graph with euclidean edges
+    """
     def __init__(self,
                  dicom_id,
                  reflacx_id,
@@ -24,6 +26,8 @@ class EuclideanGraph(GazeTrackingGraph):
 
 
     def calc_edge(self):
+        """Edge weights are inverse to distance, normalized to a [0, 1] interval.
+        """
         nodes = self.nodes
         self.adj_mat = np.array([[(2 ** 0.5 - 
                                 ((nodes[i].norm_x - nodes[j].norm_x) ** 2 +
