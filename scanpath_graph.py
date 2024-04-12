@@ -1,5 +1,7 @@
 from feature_extraction.dense_feature_extraction import DenseFeatureExtractor
 from fixation_node import FixationNode
+from pyvis.network import Network
+from os.path import sep
 
 class ScanPathGraph:
     def __init__(self,
@@ -73,8 +75,42 @@ class ScanPathGraph:
         self.adj_mat = calc_edge(self.nodes)
 
 
-    def draw(self, fpath='./graph.html', color='#88cccc', edge_labels=True):
-        pass #TODO
+    def draw(self, out_dir= None, fname=None, color='#88cccc', edge_labels=True):
+        g = Network(notebook=True, cdn_resources='remote')
+        g.toggle_physics(False)
+
+        for k, n in enumerate(self.nodes):
+            g.add_node(k,
+                    label=str(k),
+                    title=str(k),
+                    value=int(n.duration * 1000),
+                    x=n.norm_x * 1000,
+                    y=n.norm_y * 1000,
+                    color=('orange'
+                        if k == 0
+                        else ('cyan' if k == len(self.nodes) - 1
+                                else "#97c2fc")),
+                    shape='circle')
+        
+        for i in range(len(self.adj_mat)):
+            for j in range(i + 1, len(self.adj_mat)):
+                if i == j or self.adj_mat[i][j] == 0:
+                    continue
+                g.add_edge(i,
+                           j,
+                           label=("{:.2f}".format(self.adj_mat[i][j])
+                                  if edge_labels
+                                  else ""),
+                           color=color)
+        if out_dir is None:
+            out_dir = '.'
+        
+        if fname is None:
+            fname = sep.join([out_dir,
+                              '{}_{}.html'.format(self.dicom_id,
+                                                  self.reflacx_id)])
+        
+        g.save_graph(fname)
 
     
     def get_nodes_csv(self, csv_path):
@@ -95,3 +131,14 @@ class ScanPathGraph:
 
     def get_graph_csv(self):
         pass #TODO
+
+    def __str__(self):
+        ids = 'dicom-id: {}  reflacx-id: {}'.format(self.dicom_id, self.reflacx_id)
+        
+        ph1 = ('phase 1:\n' + '\n'.join(['{}: {}'.format(k, self.phase1_labels[k])
+                                         for k in self.phase1_labels]))
+        
+        ph23 = ('phase 2/3:\n' + '\n'.join(['{}: {}'.format(k, self.phase2_3_labels[k])
+                                            for k in self.phase2_3_labels]))
+        
+        return '\n'.join([ids, ph1, ph23])
