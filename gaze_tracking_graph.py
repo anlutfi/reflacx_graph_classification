@@ -3,7 +3,7 @@ from fixation_node import FixationNode
 from pyvis.network import Network
 from os.path import sep
 
-class ScanPathGraph:
+class GazeTrackingGraph:
     def __init__(self,
                  calc_edge,
                  dicom_id,
