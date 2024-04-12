@@ -10,7 +10,7 @@ class ScanPathGraph:
                  reflacx_id,
                  reflacx_sample=None,
                  metadata=None,
-                 std_devs=1,
+                 stdevs=1,
                  feature_extractor=DenseFeatureExtractor(),
                  mean_features=None):
         assert reflacx_sample is not None or metadata is not None
@@ -59,7 +59,8 @@ class ScanPathGraph:
         #TODO add common labels for simpler test case with most datapoints
 
         self.nodes = []
-        img_features = feature_extractor.get_img_features(self.xray, 
+        img_features = feature_extractor.get_img_features(self.xray,
+                                                          to_numpy=True, 
                                                           mean_features=mean_features)
         for i, fixation in enumerate(reflacx_sample.get_fixations()):
             node = FixationNode.new_node(i,
@@ -68,9 +69,11 @@ class ScanPathGraph:
                                          self.xray,
                                          feature_extractor=feature_extractor,
                                          img_features=img_features,
-                                         std_devs=std_devs)
+                                         stdevs=stdevs)
             if node is not None:
                 self.nodes.append(node)
+            else:
+                print('Void Node at {}'.format(i))
         
         self.adj_mat = calc_edge(self.nodes)
 

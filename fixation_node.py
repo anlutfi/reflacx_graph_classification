@@ -6,7 +6,7 @@ class FixationNode:
                  img,
                  feature_extractor,
                  img_features=None,
-                 std_devs=1):
+                 stdevs=1):
         norm_x = ((fixation['x_position'] - chest_bb['xmin']) /
                   (chest_bb['xmax'] - chest_bb['xmin']))
         norm_y = ((fixation['y_position'] - chest_bb['ymin']) /
@@ -21,7 +21,7 @@ class FixationNode:
                             img,
                             feature_extractor,
                             img_features=img_features,
-                            std_devs=std_devs)
+                            stdevs=stdevs)
         
     
     def __init__ (self,
@@ -32,7 +32,7 @@ class FixationNode:
                   img,
                   feature_extractor,
                   img_features=None,
-                  std_devs=1):
+                  stdevs=1):
         self.id = id
         self.duration = (fixation['timestamp_end_fixation'] -
                          fixation['timestamp_start_fixation'])
@@ -42,20 +42,20 @@ class FixationNode:
         ang_x = fixation['angular_resolution_x_pixels_per_degree']
         ang_y = fixation['angular_resolution_y_pixels_per_degree']
         
-        self.viewed_x_min = int(max(0, fixation['x_position'] - ang_x * std_devs))
+        self.viewed_x_min = int(max(0, fixation['x_position'] - ang_x * stdevs))
         self.viewed_x_max = int(min(img.shape[1],
-                                    fixation['x_position'] + ang_x * std_devs))
-        self.viewed_y_min = int(max(0, fixation['y_position'] - ang_y * std_devs))
+                                    fixation['x_position'] + ang_x * stdevs))
+        self.viewed_y_min = int(max(0, fixation['y_position'] - ang_y * stdevs))
         self.viewed_y_max = int(min(img.shape[0],
-                                    fixation['y_position'] + ang_y * std_devs))
+                                    fixation['y_position'] + ang_y * stdevs))
         
-        fs = feature_extractor.get_fixation_features((fixation['position_x'],
-                                                      fixation['position_y']),
+        fs = feature_extractor.get_fixation_features((fixation['x_position'],
+                                                      fixation['y_position']),
                                                       ang_x,
                                                       ang_y,
                                                       img=img,
                                                       img_features=img_features,
-                                                      std_devs=std_devs)
+                                                      stdevs=stdevs)
         
         self.features = fs
 
