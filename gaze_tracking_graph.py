@@ -4,8 +4,10 @@ from pyvis.network import Network
 from os.path import sep
 
 class GazeTrackingGraph:
+    def calc_edge(self):
+        pass
+    
     def __init__(self,
-                 calc_edge,
                  dicom_id,
                  reflacx_id,
                  reflacx_sample=None,
@@ -19,6 +21,9 @@ class GazeTrackingGraph:
         
         self.dicom_id = dicom_id
         self.reflacx_id = reflacx_id
+        
+        self.name = 'GazeTrackingGraph_{}_{}'.format(self.dicom_id, self.reflacx_id)
+        
         self.xray = reflacx_sample.get_dicom_img()
         self.chest_bb = reflacx_sample.get_chest_bounding_box()
 
@@ -76,7 +81,7 @@ class GazeTrackingGraph:
                 #print('Void Node at {}'.format(i))
                 pass #TODO add in logging
         
-        self.adj_mat = calc_edge(self.nodes)
+        self.calc_edge()
 
 
     def draw(self, out_dir= None, fname=None, color='#88cccc', edge_labels=True):
@@ -110,9 +115,7 @@ class GazeTrackingGraph:
             out_dir = '.'
         
         if fname is None:
-            fname = sep.join([out_dir,
-                              '{}_{}.html'.format(self.dicom_id,
-                                                  self.reflacx_id)])
+            fname = sep.join([out_dir, '{}.html'.format(self.name)])
         
         g.save_graph(fname)
 
@@ -137,7 +140,9 @@ class GazeTrackingGraph:
         pass #TODO
 
     def __str__(self):
-        ids = 'dicom-id: {}  reflacx-id: {}'.format(self.dicom_id, self.reflacx_id)
+        ids = '{}  dicom-id: {}  reflacx-id: {}'.format(self.name,
+                                                        self.dicom_id,
+                                                        self.reflacx_id)
         
         ph1 = ('phase 1:\n' + '\n'.join(['{}: {}'.format(k, self.phase1_labels[k])
                                          for k in self.phase1_labels]))
