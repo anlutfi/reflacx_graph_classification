@@ -65,7 +65,7 @@ class FixationNode:
 
     
     def __str__(self):
-        feature_str = '[{}]'.format(', '.join(self.features)) #TODO review csv array format
+        feature_str = '[{}]'.format(', '.join([str(x) for x in self.features])) #TODO review csv array format
         return ', '.join([str(self.id),
                           str(self.norm_x),
                           str(self.norm_y),
