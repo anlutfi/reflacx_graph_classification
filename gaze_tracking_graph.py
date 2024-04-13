@@ -75,13 +75,17 @@ class GazeTrackingGraph:
                                                           to_numpy=True, 
                                                           mean_features=mean_features)
         for i, fixation in enumerate(reflacx_sample.get_fixations()):
-            node = FixationNode.new_node(i,
-                                         fixation,
-                                         self.chest_bb,
-                                         self.xray,
-                                         feature_extractor=feature_extractor,
-                                         img_features=img_features,
-                                         stdevs=stdevs)
+            try:
+                node = FixationNode.new_node(i,
+                                             fixation,
+                                             self.chest_bb,
+                                             self.xray,
+                                             feature_extractor=feature_extractor,
+                                             img_features=img_features,
+                                             stdevs=stdevs)
+            except IndexError:
+                print('fixation {}'.format(i))
+                raise IndexError
             if node is not None:
                 self.nodes.append(node)
             else:
