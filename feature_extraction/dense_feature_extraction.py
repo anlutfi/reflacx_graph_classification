@@ -68,13 +68,9 @@ class DenseFeatureExtractor(FeatureExtractor):
         startx = x // 2 - (crop_size // 2)
         starty = y // 2 - (crop_size // 2)
 
-        print(x, y)
-
         # if fixation out of bounds, adjust to border
         fixation_pos = (min(max(fixation_pos[0], startx), startx + crop_size),
                         min(max(fixation_pos[1], starty), starty + crop_size))
-        
-        print("crop {}  startx {}   starty {}   pos{}".format(crop_size, startx, starty, fixation_pos))
         
         fixation_crop = [(max(startx, fixation_pos[0] - stdevs * ang_x),
                           max(starty, fixation_pos[1] - stdevs * ang_y)), 
