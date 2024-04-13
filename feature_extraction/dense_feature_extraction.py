@@ -2,6 +2,7 @@ import torchxrayvision as xrv
 import numpy as np
 import cv2
 import torch
+from math import ceil, floor
 
 from feature_extraction.feature_extraction import FeatureExtractor
 
@@ -61,7 +62,7 @@ class DenseFeatureExtractor(FeatureExtractor):
         if img_size is None:
             y, x = self.last_img_size
         else:
-            x, y = img_size
+            y, x = img_size
 
         crop_size = np.min([y, x])
         startx = x // 2 - (crop_size // 2)
@@ -134,7 +135,7 @@ class DenseFeatureExtractor(FeatureExtractor):
             return None
         
         fixation_pos, fixation_crop = trans_fix
-        
+
         tl = fixation_crop[0]
         br = fixation_crop[1]
         tr = (br[0], tl[1])
@@ -148,8 +149,8 @@ class DenseFeatureExtractor(FeatureExtractor):
         tr = adjustpos(tr)
         br = adjustpos(br)
 
-        h_region_count = int(tr[0]) - int(tl[0]) + 1
-        v_region_count = int(bl[1]) - int(tl[1]) + 1
+        h_region_count = ceil(tr[0]) - floor(tl[0])
+        v_region_count = ceil(bl[1]) - floor(tl[1])
 
         crop_area = (tr[0] - tl[0]) * (bl[1] - tl[1])
 
@@ -157,17 +158,21 @@ class DenseFeatureExtractor(FeatureExtractor):
         # and each of the feature regions
         result = np.zeros(img_features.shape[0], dtype=img_features.dtype)
 
-        for i in range(int(tl[0]), int(tl[0]) + h_region_count):
-            for j in range(int(tl[1]), int(tl[1]) + v_region_count):
+        for i in range(floor(tl[0]), ceil(tr[0])):
+            for j in range(floor(tl[1]), ceil(bl[1])):
                 xmin = max(tl[0], i)
                 ymin = max(tl[1], j)
                 xmax = min(br[0], i + 1)
                 ymax = min(br[1], j + 1)
 
                 coef = (xmax - xmin) * (ymax - ymin) / crop_area
-                result = np.sum([result,
-                                 img_features[:, i, j] * coef],
-                                 axis=0)
+                try:
+                    result = np.sum([result,
+                                     img_features[:, i, j] * coef],
+                                     axis=0)
+                except IndexError:
+                    print('h_region_count {}\n v_region_count {}\n i {}\n j {}\n img_features.shape {}'.format(h_region_count, v_region_count, i, j, img_features.shape))
+                    raise IndexError
                 
         return result if to_numpy else torch.from_numpy(result)
     
