@@ -68,24 +68,26 @@ class DenseFeatureExtractor(FeatureExtractor):
         startx = x // 2 - (crop_size // 2)
         starty = y // 2 - (crop_size // 2)
 
+        print(x, y)
+
         # if fixation out of bounds, adjust to border
-        fixation_pos = (max(0, fixation_pos[0] - startx),
-                        max(0, fixation_pos[1] - starty))
+        fixation_pos = (min(max(fixation_pos[0], startx), startx + crop_size),
+                        min(max(fixation_pos[1], starty), starty + crop_size))
         
-        if fixation_pos[0] < 0 or fixation_pos[1] < 0:
-            return None
+        print("crop {}  startx {}   starty {}   pos{}".format(crop_size, startx, starty, fixation_pos))
         
-        fixation_crop = [(max(0, fixation_pos[0] - stdevs * ang_x),
-                          max(0, fixation_pos[1] - stdevs * ang_y)), 
-                         (min(x, fixation_pos[0] + stdevs * ang_x),
-                          min(y, fixation_pos[1] + stdevs * ang_y))]
+        fixation_crop = [(max(startx, fixation_pos[0] - stdevs * ang_x),
+                          max(starty, fixation_pos[1] - stdevs * ang_y)), 
+                         (min(startx + crop_size, fixation_pos[0] + stdevs * ang_x),
+                          min(starty + crop_size, fixation_pos[1] + stdevs * ang_y))]
         
-        fixation_pos = (fixation_pos[0] / crop_size, fixation_pos[1] / crop_size)
+        fixation_pos = ((fixation_pos[0] - startx) / crop_size,
+                        (fixation_pos[1] - starty) / crop_size)
         
-        fixation_crop[0] = (fixation_crop[0][0] / crop_size,
-                            fixation_crop[0][1] / crop_size)
-        fixation_crop[1] = (fixation_crop[1][0] / crop_size,
-                            fixation_crop[1][1] / crop_size)
+        fixation_crop[0] = ((fixation_crop[0][0] - startx) / crop_size,
+                            (fixation_crop[0][1] - starty) / crop_size)
+        fixation_crop[1] = ((fixation_crop[1][0] - startx) / crop_size,
+                            (fixation_crop[1][1] - starty) / crop_size)
         
         if not normalize:
             fixation_pos = (int(fixation_pos[0] * self.resize),
