@@ -129,9 +129,6 @@ class DenseFeatureExtractor(FeatureExtractor):
                                             img_size=img_size,
                                             normalize=True)
         
-        if trans_fix is None:
-            return None
-        
         fixation_pos, fixation_crop = trans_fix
 
         tl = fixation_crop[0]
@@ -169,7 +166,7 @@ class DenseFeatureExtractor(FeatureExtractor):
                                      img_features[:, i, j] * coef],
                                      axis=0)
                 except IndexError:
-                    print('h_region_count {}\n v_region_count {}\n i {}\n j {}\n img_features.shape {}'.format(h_region_count, v_region_count, i, j, img_features.shape))
+                    self.log('bad fixation region math: h_region_count {}\n v_region_count {}\n i {}\n j {}\n img_features.shape {}'.format(h_region_count, v_region_count, i, j, img_features.shape))
                     raise IndexError
                 
         return result if to_numpy else torch.from_numpy(result)
@@ -195,8 +192,7 @@ class DenseFeatureExtractor(FeatureExtractor):
                                                       img_features=img_features,
                                                       stdevs=stdevs,
                                                       mean_features=mean_features)
-            if fix_features is not None: #TODO log when this happens
-                result[i] = fix_features
+            result[i] = fix_features
         return result
     
     
