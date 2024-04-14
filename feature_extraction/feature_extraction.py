@@ -1,3 +1,4 @@
+from rlogger import RLogger
 import torchxrayvision as xrv
 import numpy as np
 import torch
@@ -11,6 +12,8 @@ class FeatureExtractor:
     """
     def __init__(self):
         self.model = None
+
+        self.log = RLogger(__name__, self.__class__.__name__)
         
 
     def transform_img(self, img, to_numpy):
@@ -75,7 +78,7 @@ class FeatureExtractor:
         """
         all_features = []
         dicom_ids = reflacx_meta.list_dicom_ids()
-        for i, dicom_id in enumerate(dicom_ids):
+        for dicom_id in dicom_ids:
             sample = reflacx_meta.get_sample(dicom_id, reflacx_meta.list_reflacx_ids(dicom_id)[0])
             try:
                 img = sample.get_dicom_img()
