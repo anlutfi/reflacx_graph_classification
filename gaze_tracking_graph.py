@@ -162,6 +162,10 @@ class GazeTrackingGraph:
         pass #TODO
 
     
+    def save(self, f_suffix):
+        pass #TODO
+    
+    
     def __str__(self):
         ids = '{}  dicom-id: {}  reflacx-id: {}'.format(self.name,
                                                         self.dicom_id,
