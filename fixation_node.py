@@ -1,3 +1,5 @@
+from rlogger import RLogger
+
 class FixationNode:
     """A graph's node representing a REFLACX fixation
     """
@@ -47,6 +49,8 @@ class FixationNode:
                   stdevs=1):
         """See FixationNode.new_node()
         """
+        self.log = RLogger(__name__, self.__class__.__name__)
+        
         self.id = id
         self.duration = (fixation['timestamp_end_fixation'] -
                          fixation['timestamp_start_fixation'])
@@ -63,13 +67,16 @@ class FixationNode:
         self.viewed_y_max = int(min(img.shape[0],
                                     fixation['y_position'] + ang_y * stdevs))
         
-        fs = feature_extractor.get_fixation_features((fixation['x_position'],
-                                                      fixation['y_position']),
-                                                      ang_x,
-                                                      ang_y,
-                                                      img=img,
-                                                      img_features=img_features,
-                                                      stdevs=stdevs)
+        try:
+            fs = feature_extractor.get_fixation_features((fixation['x_position'],
+                                                          fixation['y_position']),
+                                                          ang_x,
+                                                          ang_y,
+                                                          img=img,
+                                                          img_features=img_features,
+                                                          stdevs=stdevs)
+        except IndexError:
+            fs = None
         
         self.features = fs
 
