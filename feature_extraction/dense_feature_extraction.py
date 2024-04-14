@@ -186,12 +186,16 @@ class DenseFeatureExtractor(FeatureExtractor):
             position = (fixation['x_position'], fixation['y_position'])
             ang_x = fixation['angular_resolution_x_pixels_per_degree']
             ang_y = fixation['angular_resolution_y_pixels_per_degree']
-            fix_features = self.get_fixation_features(position,
-                                                      ang_x,
-                                                      ang_y,
-                                                      img_features=img_features,
-                                                      stdevs=stdevs,
-                                                      mean_features=mean_features)
+            try:
+                fix_features = self.get_fixation_features(position,
+                                                          ang_x,
+                                                          ang_y,
+                                                          img_features=img_features,
+                                                          stdevs=stdevs,
+                                                          mean_features=mean_features)
+            except IndexError:
+                self.log('bad fixation features at postion {}'.format(i))
+                fix_features = None
             result[i] = fix_features
         return result
     
