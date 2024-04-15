@@ -44,7 +44,10 @@ class GazeTrackingGraph:
                                 for k in PHASE_2_3_LABELS
                                 if k in reflacx_sample.data}
         
-        #TODO add common labels for simpler test case with most datapoints
+        self.common_labels = {k: reflacx_sample.data[k]
+                              for k in PHASE_1_LABELS
+                              if k in PHASE_2_3_LABELS
+                              and k in reflacx_sample.data}
 
         self.nodes = []
         img_features = feature_extractor.get_img_features(self.xray,
