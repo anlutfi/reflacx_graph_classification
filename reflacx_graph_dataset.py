@@ -87,7 +87,7 @@ def generate_dataset(name,
                 g.write_nodes_csv(n_csv, curr_line)
                 g.write_edges_csv(e_csv, curr_line)
             except KeyboardInterrupt:
-                raise KeyboardInterrupt
+                raise KeyboardInterrupt #TODO fix this shit
             except:
                 log('bad graph for pair {} --- {}'.format(dicom_id,
                                                             reflacx_id),
