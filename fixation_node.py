@@ -4,6 +4,13 @@ class FixationNode:
     """A graph's node representing a REFLACX fixation
     """
     @staticmethod
+    def csv_header():
+        """returns a header of class attributes' names
+        to be used as header of csv file
+        """
+        return "node_id, norm_x, norm_y, duration, features"
+    
+    @staticmethod
     def new_node(id,
                  fixation,
                  chest_bb,
@@ -79,13 +86,6 @@ class FixationNode:
             fs = None
         
         self.features = fs
-
-    
-    def get_csv_header(self):
-        """returns a header of class attributes' names
-        to be used as header of csv file
-        """
-        return "id, norm_x, norm_y, duration, features"
 
     
     def __str__(self):

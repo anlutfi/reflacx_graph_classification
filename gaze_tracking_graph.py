@@ -9,6 +9,14 @@ class GazeTrackingGraph:
     """Represents a REFLACX datapoint as a graph of its gaze fixations
     Nodes are each fixation and edges are to be defined by inheritance
     """
+    @staticmethod
+    def edge_csv_header():
+        """returns a header of class attributes' names
+        to be used as header of csv file
+        """
+        return "src_id, dst_id, weight"
+    
+    
     def __init__(self,
                  dicom_id,
                  reflacx_id,
@@ -119,31 +127,29 @@ class GazeTrackingGraph:
         g.save_graph(fname)
 
     
-    def get_nodes_csv(self, csv_path):
-        #TODO replace with pandas
-        with open(csv_path, 'w') as f:
-            f.write(self.nodes[0].get_csv_header())
-            for node in self.nodes:
-                f.write(str(node))
+    def write_nodes_csv(self, csv_file, makeline=lambda x: x):
+        for node in self.nodes:
+            csv_file.write(makeline(str(node)))
 
     
-    def get_edges_csv(self, csv_path):
-        #TODO replace with pandas
-        with open(csv_path, 'w') as f:
-            f.write("src, dst, w")
-            for i, node in enumerate(self.nodes):
-                for j, node in enumerate(self.nodes):
-                    if self.adj_mat[i, j] != 0:
-                        f.write("{}, {}, {}".format(i, j, self.adj_mat[i, j]))
+    def write_edges_csv(self, csv_file, makeline=lambda x: x):
+        for i, node in enumerate(self.nodes):
+            for j, node in enumerate(self.nodes):
+                if self.adj_mat[i, j] != 0:
+                    csv_file.write(makeline("{}, {}, {}".format(i, j, self.adj_mat[i, j])))
 
     
-    def get_graph_csv(self):
-        pass #TODO
+    def graph_csv(self, labels='common'):
+        assert labels in ['common', 'phase_1', 'phase_2', 'phase_3']
+        if labels == 'common':
+            result = self.common_labels
+        elif labels == 'phase_1':
+            result = self.phase1_labels
+        else:
+            result = self.phase2_3_labels
 
-    
-    def save(self, f_suffix):
-        pass #TODO
-    
+        return str(list(result.values()))
+
     
     def __str__(self):
         ids = '{}  dicom-id: {}  reflacx-id: {}'.format(self.name,
