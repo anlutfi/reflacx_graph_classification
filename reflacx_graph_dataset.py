@@ -70,6 +70,7 @@ def generate_dataset(name,
     last_percent = 0
     for dicom_id in dicom_ids:
         for reflacx_id in metadata.list_reflacx_ids(dicom_id):
+            os.makedirs(log_dir)
             RLogger.start(os.path.sep.join([log_dir,
                                     '{}__{}.log'.format(dicom_id, reflacx_id)]))
             try:
