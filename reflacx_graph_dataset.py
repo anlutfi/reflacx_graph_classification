@@ -65,7 +65,10 @@ def generate_dataset(name,
     
     
     i = 0
-    for dicom_id in metadata.list_dicom_ids(n_samples=2): #TODO remove after debug
+    dicom_ids = metadata.list_dicom_ids()
+    size = len(dicom_ids)
+    last_percent = 0
+    for dicom_id in dicom_ids:
         for reflacx_id in metadata.list_reflacx_ids(dicom_id):
             RLogger.start(os.path.sep.join([log_dir,
                                     '{}__{}.log'.format(dicom_id, reflacx_id)]))
@@ -87,8 +90,10 @@ def generate_dataset(name,
                                                             reflacx_id),
                     exception=True)
                 continue
-            if i % 10 == 0:
-                print(i)
+            percent = int((i / size) * 100)
+            if percent > last_percent:
+                print('{} \% of dicom ids'.format(percent))
+                last_percent = percent
             i += 1
 
     n_csv.close()
