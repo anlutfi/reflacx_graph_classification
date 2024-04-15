@@ -65,6 +65,7 @@ def generate_dataset(name,
     
     
     i = 0
+    dicom_i = 0
     dicom_ids = metadata.list_dicom_ids()
     size = len(dicom_ids)
     last_percent = 0
@@ -93,11 +94,14 @@ def generate_dataset(name,
                                                             reflacx_id),
                     exception=True)
                 continue
-            percent = int((i / size) * 100)
-            if percent > last_percent:
-                print('{}% of dicom ids'.format(percent), end='\r')
-                last_percent = percent
             i += 1
+            
+        percent = int((dicom_i / size) * 100)
+        if percent > last_percent:
+            print('{}% of dicom ids'.format(percent), end='\r')
+            last_percent = percent
+        dicom_i += 1
+            
 
     n_csv.close()
     e_csv.close()
