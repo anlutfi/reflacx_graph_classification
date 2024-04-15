@@ -44,6 +44,7 @@ class GazeTrackingGraph:
         self.xray = reflacx_sample.get_dicom_img()
         self.chest_bb = reflacx_sample.get_chest_bounding_box()
 
+        #TODO normalize labels' intervals to [0, 1]. i think its now [1, 5]
         self.phase1_labels = {k: reflacx_sample.data[k] 
                               for k in PHASE_1_LABELS
                               if k in reflacx_sample.data}
