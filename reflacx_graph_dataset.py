@@ -95,7 +95,7 @@ def generate_dataset(name,
                 continue
             percent = int((i / size) * 100)
             if percent > last_percent:
-                print('{}% of dicom ids'.format(percent))
+                print('{}% of dicom ids'.format(percent), end='\r')
                 last_percent = percent
             i += 1
 
