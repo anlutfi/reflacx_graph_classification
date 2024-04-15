@@ -3,6 +3,8 @@ from fixation_node import FixationNode
 from pyvis.network import Network
 from os.path import sep
 
+from reflacx_labels import PHASE_1_LABELS, PHASE_2_3_LABELS
+
 class GazeTrackingGraph:
     """Represents a REFLACX datapoint as a graph of its gaze fixations
     Nodes are each fixation and edges are to be defined by inheritance
@@ -35,37 +37,11 @@ class GazeTrackingGraph:
         self.chest_bb = reflacx_sample.get_chest_bounding_box()
 
         self.phase1_labels = {k: reflacx_sample.data[k] 
-                              for k in ["Airway wall thickening",
-                                        "Atelectasis",
-                                        "Consolidation",
-                                        "Emphysema",
-                                        "Enlarged cardiac silhouette",
-                                        "Fibrosis",
-                                        "Fracture",
-                                        "Groundglass opacity",
-                                        "Mass",
-                                        "Nodule",
-                                        "Pleural effusion",
-                                        "Pleural thickening",
-                                        "Pneumothorax",
-                                        "Pulmonary edema",
-                                        "Wide mediastinum"]
+                              for k in PHASE_1_LABELS
                               if k in reflacx_sample.data}
         
         self.phase2_3_labels = {k: reflacx_sample.data[k] 
-                                for k in ["Abnormal mediastinal contour",
-                                          "Acute fracture",
-                                          "Atelectasis",
-                                          "Consolidation",
-                                          "Enlarged cardiac silhouette",
-                                          "Enlarged hilum",
-                                          "Groundglass opacity",
-                                          "Hiatal hernia",
-                                          "High lung volume / emphysema, Interstitial lung disease",
-                                          "Lung nodule or mass",
-                                          "Pleural abnormality",
-                                          "Pneumothorax",
-                                          "Pulmonary edema"]
+                                for k in PHASE_2_3_LABELS
                                 if k in reflacx_sample.data}
         
         #TODO add common labels for simpler test case with most datapoints
