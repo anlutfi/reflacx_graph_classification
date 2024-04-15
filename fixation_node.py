@@ -8,7 +8,13 @@ class FixationNode:
         """returns a header of class attributes' names
         to be used as header of csv file
         """
-        return "node_id, norm_x, norm_y, duration, features"
+        main_header = ', '.join(['node_id',
+                                 'norm_x',
+                                 'norm_y',
+                                 'duration',
+                                 'features'])
+        feat_header = ', '.join(['feat_{}'.format(i) for i in range(1024)])
+        return ', '.join([main_header, feat_header])
     
     @staticmethod
     def new_node(id,
