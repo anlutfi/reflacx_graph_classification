@@ -4,6 +4,7 @@ from pyvis.network import Network
 from os.path import sep
 
 from reflacx_labels import PHASE_1_LABELS, PHASE_2_3_LABELS
+import label_regularization as lr
 
 class GazeTrackingGraph:
     """Represents a REFLACX datapoint as a graph of its gaze fixations
@@ -24,13 +25,20 @@ class GazeTrackingGraph:
                  metadata=None,
                  stdevs=1,
                  feature_extractor=DenseFeatureExtractor(),
-                 mean_features=None):
+                 mean_features=None,
+                 label_reg=lr.linear_regularization):
         """param:reflacx_sample is a REFLACX datapoint. If none is provided,
         it will be loaded from param:metadata
 
         The region of the image observed by a fixation is a gaussian bell with the fixation's position as the mean (center point), extending for a number of standard deviations(param:stdevs). 1 standard deviation = 1 degree.
 
         if param:mean_features is provided, it will be subtracted from all feature extractions (mean normalization).
+
+        param:label_reg is a function that regularizes class labels (diagnoses)
+            into a [0, 1] interval. REFLACX uses a [0,5] interval to classify
+            the probability of each specific anomaly.
+            The default behaviour is to simply transform the interval, but it might
+            be better to establish a minimal threshold for considering an anomaly probable
         """
         assert reflacx_sample is not None or metadata is not None
         if reflacx_sample is None:
@@ -40,6 +48,7 @@ class GazeTrackingGraph:
         self.reflacx_id = reflacx_id
         
         self.name = 'GazeTrackingGraph_{}_{}'.format(self.dicom_id, self.reflacx_id)
+        self.label_reg = label_reg
         
         self.xray = reflacx_sample.get_dicom_img()
         self.chest_bb = reflacx_sample.get_chest_bounding_box()
@@ -149,7 +158,7 @@ class GazeTrackingGraph:
         else:
             result = self.phase2_3_labels
 
-        return str(list(result.values()))
+        return str(self.label_reg(list(result.values())))
 
     
     def __str__(self):
