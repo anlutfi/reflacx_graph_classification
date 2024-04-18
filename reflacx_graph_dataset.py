@@ -30,6 +30,9 @@ def generate_dataset(name,
     outdir = './{}'.format(name) if outdir is None else outdir
     os.makedirs(outdir, exist_ok=True)
 
+    os.makedirs(log_dir, exist_ok=True)
+    RLogger.start(os.path.sep.join([log_dir, '{}.log'.format(name)]))
+
     mean_features = None
     if mean_normalize_features:
         if mean_features_fpath is None:
@@ -77,9 +80,6 @@ def generate_dataset(name,
                                                                        ri + 1,
                                                                        r_size),
                   end='\r')
-            os.makedirs(log_dir, exist_ok=True)
-            RLogger.start(os.path.sep.join([log_dir,
-                                    '{}__{}.log'.format(dicom_id, reflacx_id)]))
             try:
                 curr_line = lambda line: csv_line(i, line)
                 g = graph_class(dicom_id,
