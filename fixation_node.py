@@ -11,8 +11,7 @@ class FixationNode:
         main_header = ', '.join(['node_id',
                                  'norm_x',
                                  'norm_y',
-                                 'duration',
-                                 'features'])
+                                 'duration'])
         feat_header = ', '.join(['feat_{}'.format(i) for i in range(1024)])
         return ', '.join([main_header, feat_header])
     
