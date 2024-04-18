@@ -5,6 +5,7 @@ from os.path import sep
 
 from reflacx_labels import PHASE_1_LABELS, PHASE_2_3_LABELS
 import label_regularization as lr
+from consts import CSV_SEP
 
 class GazeTrackingGraph:
     """Represents a REFLACX datapoint as a graph of its gaze fixations
@@ -15,7 +16,7 @@ class GazeTrackingGraph:
         """returns a header of class attributes' names
         to be used as header of csv file
         """
-        return "src_id, dst_id, weight"
+        return CSV_SEP.join(["src_id", "dst_id", "weight"])
     
     
     def __init__(self,
@@ -53,7 +54,7 @@ class GazeTrackingGraph:
         self.xray = reflacx_sample.get_dicom_img()
         self.chest_bb = reflacx_sample.get_chest_bounding_box()
 
-        #TODO normalize labels' intervals to [0, 1]. i think its now [1, 5]
+        #labels are regularized only in csv file writing (self.graph_csv())
         self.phase1_labels = {k: reflacx_sample.data[k] 
                               for k in PHASE_1_LABELS
                               if k in reflacx_sample.data}
@@ -80,7 +81,7 @@ class GazeTrackingGraph:
                                          img_features=img_features,
                                          stdevs=stdevs)
             if node is None:
-                continue
+                continue # TODO log missing nodes
             if node.features is None:
                 self.log('bad features for fixation {}'.format(i))
                 raise IndexError
@@ -138,15 +139,17 @@ class GazeTrackingGraph:
 
     
     def write_nodes_csv(self, csv_file, makeline=lambda x: x):
-        for node in self.nodes:
-            csv_file.write(makeline(str(node)))
+        for i, node in enumerate(self.nodes):
+            csv_file.write(makeline(CSV_SEP.join([str(i), str(node)]))) #TODO param i from lambda
 
     
     def write_edges_csv(self, csv_file, makeline=lambda x: x):
         for i, node in enumerate(self.nodes):
             for j, node in enumerate(self.nodes):
                 if self.adj_mat[i, j] != 0:
-                    csv_file.write(makeline("{}, {}, {}".format(i, j, self.adj_mat[i, j])))
+                    csv_file.write(makeline(CSV_SEP.join([str(i),
+                                                          str(j),
+                                                          str(self.adj_mat[i, j])])))
 
     
     def graph_csv(self, labels='common'):
@@ -158,7 +161,8 @@ class GazeTrackingGraph:
         else:
             result = self.phase2_3_labels
 
-        return str(self.label_reg(list(result.values())))
+        result = [str(x) for x in self.label_reg(list(result.values()))]
+        return '\"{}\"'.format(CSV_SEP.join(result))
 
     
     def __str__(self):

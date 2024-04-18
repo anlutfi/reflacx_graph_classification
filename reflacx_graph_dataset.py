@@ -6,6 +6,8 @@ from rlogger import RLogger
 import os
 from fixation_node import FixationNode
 
+from consts import CSV_SEP
+
 def generate_dataset(name,
                      metadata,
                      outdir=None,
@@ -16,7 +18,7 @@ def generate_dataset(name,
                                 'index': 'index.csv'
                                 },
                      g_id = 'graph_id',
-                     sep=', ',
+                     sep=CSV_SEP,
                      graph_class=GazeTrackingGraph,
                      stdevs=1,
                      feature_extractor=DenseFeatureExtractor(),
@@ -47,7 +49,7 @@ def generate_dataset(name,
                         '\nnode_data:',
                         '\n- file_name: {}'.format(filenames['nodes']),
                         '\ngraph_data:',
-                        '\nfile_name: {}'.format(filenames['graphs'])])
+                        '\n  file_name: {}'.format(filenames['graphs'])])
 
     e_csv = open(os.sep.join([outdir, filenames['edges']]), 'w')
     n_csv = open(os.sep.join([outdir, filenames['nodes']]), 'w')
@@ -63,11 +65,10 @@ def generate_dataset(name,
     g_csv.write(csv_header('labels'))
     i_csv.write(csv_header(sep.join(['dicom_id', 'reflacx_id'])))
     
-    
     i = 0
     dicom_ids = metadata.list_dicom_ids()
     d_size = len(dicom_ids)
-    for di, dicom_id in enumerate(dicom_ids):
+    for di, dicom_id in enumerate(dicom_ids): 
         reflacx_ids = metadata.list_reflacx_ids(dicom_id)
         for ri, reflacx_id in enumerate(reflacx_ids):
             r_size = len(reflacx_ids)
@@ -98,6 +99,7 @@ def generate_dataset(name,
                 log('bad graph for pair {} --- {}'.format(dicom_id,
                                                             reflacx_id),
                     exception=True)
+                i += 1
                 continue
             i += 1
    

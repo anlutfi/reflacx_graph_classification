@@ -1,4 +1,5 @@
 from rlogger import RLogger
+from consts import CSV_SEP
 
 class FixationNode:
     """A graph's node representing a REFLACX fixation
@@ -8,12 +9,12 @@ class FixationNode:
         """returns a header of class attributes' names
         to be used as header of csv file
         """
-        main_header = ', '.join(['node_id',
-                                 'norm_x',
-                                 'norm_y',
-                                 'duration'])
-        feat_header = ', '.join(['feat_{}'.format(i) for i in range(1024)])
-        return ', '.join([main_header, feat_header])
+        return CSV_SEP.join(['node_id',
+                             'norm_x',
+                             'norm_y',
+                             'duration',
+                             'feats'])
+        
     
     @staticmethod
     def new_node(id,
@@ -94,9 +95,8 @@ class FixationNode:
 
     
     def __str__(self):
-        feature_str = '{}'.format(', '.join([str(float(x)) for x in self.features])) #TODO review csv array format
-        return ', '.join([str(self.id),
-                          str(self.norm_x),
-                          str(self.norm_y),
-                          str(self.duration),
-                          feature_str])
+        feature_str = '\"{}\"'.format(CSV_SEP.join([str(float(x)) for x in self.features])) #TODO review csv array format
+        return CSV_SEP.join([str(self.norm_x),
+                             str(self.norm_y),
+                             str(self.duration),
+                             feature_str])
