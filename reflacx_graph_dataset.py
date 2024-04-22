@@ -8,23 +8,23 @@ from fixation_node import FixationNode
 
 from consts import CSV_SEP
 
-def generate_dataset(name,
-                     metadata,
-                     outdir=None,
-                     filenames={'meta': 'meta.yaml',
-                                'edges': 'edges.csv',
-                                'nodes': 'nodes.csv',
-                                'graphs': 'graphs.csv',
-                                'index': 'index.csv'
-                                },
-                     g_id = 'graph_id',
-                     sep=CSV_SEP,
-                     graph_class=GazeTrackingGraph,
-                     stdevs=1,
-                     feature_extractor=DenseFeatureExtractor(),
-                     mean_normalize_features=True,
-                     mean_features_fpath=None,
-                     log_dir='.'):
+def generate_csv_dataset(name,
+                         metadata,
+                         outdir=None,
+                         filenames={'meta': 'meta.yaml',
+                                    'edges': 'edges.csv',
+                                    'nodes': 'nodes.csv',
+                                    'graphs': 'graphs.csv',
+                                    'index': 'index.csv'
+                                    },
+                         g_id = 'graph_id',
+                         sep=CSV_SEP,
+                         graph_class=GazeTrackingGraph,
+                         stdevs=1,
+                         feature_extractor=DenseFeatureExtractor(),
+                         mean_normalize_features=True,
+                         mean_features_fpath=None,
+                         log_dir='.'):
     log = RLogger(__name__)
     
     outdir = './{}'.format(name) if outdir is None else outdir
