@@ -14,24 +14,30 @@ class ScanPathGraph(GazeTrackingGraph):
                  metadata=None,
                  stdevs=1,
                  feature_extractor=DenseFeatureExtractor(),
-                 mean_features=None):
+                 mean_features=None,
+                 self_edges=True,
+                 bidirectional=True):
         super().__init__(dicom_id,
                          reflacx_id,
                          reflacx_sample,
                          metadata,
                          stdevs,
                          feature_extractor,
-                         mean_features)
+                         mean_features,
+                         self_edges=self_edges,
+                         bidirectional=bidirectional)
         self.name = 'ScanPathGraph_{}_{}'.format(self.dicom_id, self.reflacx_id)
 
 
-    def calc_edge(self, self_edges=True):
+    def calc_edge(self):
         """A node is neighbor to another if they are next or previous in the scanpath
         """
         def w(i, j):
             if i == j:
-                return 1.0 if self_edges else 0.0
-            return 1.0 if abs(i - j) == 1 else 0.0
+                return 1.0 if self.self_edges else 0.0
+            if self.bidirectional:
+                return 1.0 if abs(i - j) == 1 else 0.0
+            return 1.0 if j - i == 1 else 0.0
         
         self.adj_mat =  np.array([[w(i, j)
                                    for j in range(len(self.nodes))]

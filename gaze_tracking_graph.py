@@ -27,7 +27,9 @@ class GazeTrackingGraph:
                  stdevs=1,
                  feature_extractor=DenseFeatureExtractor(),
                  mean_features=None,
-                 label_reg=lr.linear_regularization):
+                 label_reg=lr.linear_regularization,
+                 self_edges=True,
+                 bidirectional=True):
         """param:reflacx_sample is a REFLACX datapoint. If none is provided,
         it will be loaded from param:metadata
 
@@ -88,10 +90,12 @@ class GazeTrackingGraph:
             self.nodes.append(node)
         
         self.adj_mat = None
+        self.self_edges = self_edges
+        self.bidirectional = bidirectional
         self.calc_edge()
 
 
-    def calc_edge(self, self_edges=True):
+    def calc_edge(self):
         """Classes inheriting GazeTrackingGraph need
         to fill a adjacency matrix (self.adj_mat).
         param:self_edges determine whether or not to add edges from a node to itself
