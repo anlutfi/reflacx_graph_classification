@@ -34,7 +34,7 @@ class IOUGraph(GazeTrackingGraph):
         nodes = self.nodes
         result = [[0.0 for j in range(len(nodes))] for i in range(len(nodes))]
         for i, node_i in enumerate(nodes):
-            for j, node_j in enumerate(nodes):
+            for j, node_j in enumerate(nodes[i:], i):
                 if i == j:
                     result[i][j] = 1.0 if self.self_edges else 0.0
                     continue
@@ -52,6 +52,6 @@ class IOUGraph(GazeTrackingGraph):
                 
                 iou = intersec / (i_area + j_area - intersec)
 
-                result[i][j] = iou
+                result[i][j] = result[j][i] = iou
 
         self.adj_mat = np.array(result)

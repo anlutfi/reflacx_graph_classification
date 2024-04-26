@@ -32,13 +32,15 @@ class ScanPathGraph(GazeTrackingGraph):
     def calc_edge(self):
         """A node is neighbor to another if they are next or previous in the scanpath
         """
-        def w(i, j):
-            if i == j:
-                return 1.0 if self.self_edges else 0.0
-            if self.bidirectional:
-                return 1.0 if abs(i - j) == 1 else 0.0
-            return 1.0 if j - i == 1 else 0.0
-        
-        self.adj_mat =  np.array([[w(i, j)
-                                   for j in range(len(self.nodes))]
-                                  for i in range(len(self.nodes))])
+        nodes = self.nodes
+        result = [[0.0 for j in range(len(nodes))] for i in range(len(nodes))]
+        for i in range(len(nodes)):
+            for j in range(i, len(nodes)):
+                if i == j and self.self_edges:
+                    result[i][j] = 1.0
+                elif j - i == 1:
+                    result[i][j] = 1.0
+                    if self.bidirectional:
+                        result[j][i] = result[i][j]
+
+        self.adj_mat = np.array(result)
