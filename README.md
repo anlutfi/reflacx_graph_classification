@@ -32,7 +32,7 @@ Para o vértice em si, 3 grandezas foram consideradas relevantes: o tempo que o 
 
 ### Feature Extraction
 
-O modelo utilizado como feature extractor é o densenet121-res224-mimic_ch (https://github.com/mlmed/torchxrayvision, Cohen2022xrv, chexpert: irvin2019chexpert)
+O modelo utilizado como feature extractor é o densenet121-res224-mimic_ch (https://github.com/mlmed/torchxrayvision, Cohen2022xrv, chexpert: irvin2019chexpert). A última camada de features, antes da planificação do tensor e sua subsequente classificação, tem dimensões 7 X 7 X 2024.
 
 
 ```python
@@ -49,7 +49,7 @@ mimic_dir = "../data/mimic/reflacx_imgs"
 
 from metadata import Metadata
 
-metadata = Metadata(reflacx_dir, mimic_dir, full_meta_path)
+metadata = Metadata(reflacx_dir, mimic_dir, full_meta_path, max_dicom_lib_ram_percent=20)
 ```
 
     loading metadata
@@ -69,21 +69,80 @@ from feature_extraction.dense_feature_extraction import DenseFeatureExtractor
 extractor = DenseFeatureExtractor()
 ```
 
+#### Normalização pela média
+
+Dado que o DensNet não subtrai a imagem de entrada da média das imagens da base, uma normalização pela media pode ser feita já no espaço das features.
+Calculando a média das features 7x7x1024 de cada imagem do REFLACX, e usando sua subtração.
+
+
+```python
+avg_fpath = './avg_DensNet_REFLACX_features.npy'
+
+try:
+    avg_feats = np.load(avg_fpath)
+except FileNotFoundError:
+    avg_feats = extractor.get_reflacx_avg_features(metadata, True)
+    np.save(avg_fpath, avg_feats)
+
+avg_feats.shape
+```
+
+
+
+
+    (1024, 7, 7)
+
+
+
+
+```python
+print(avg_feats[0])
+```
+
+    [[-0.04179892 -0.04111027 -0.04184777 -0.04298306 -0.04277436 -0.04161398
+      -0.04128559]
+     [-0.0418513  -0.04231915 -0.04313573 -0.04415511 -0.04340985 -0.04202051
+      -0.04093691]
+     [-0.04273174 -0.04297613 -0.04256563 -0.04288057 -0.04300175 -0.04247241
+      -0.04157502]
+     [-0.04251337 -0.04237691 -0.04150238 -0.04181505 -0.0428514  -0.04231722
+      -0.04158377]
+     [-0.04263338 -0.04289535 -0.0432397  -0.04436683 -0.04437548 -0.04270092
+      -0.04187388]
+     [-0.04299061 -0.0445708  -0.04635097 -0.04702643 -0.04665419 -0.04469294
+      -0.04295835]
+     [-0.04355121 -0.04607722 -0.04779708 -0.04789687 -0.04743838 -0.04645823
+      -0.045256  ]]
+
+
+#### Extração propriamente dita
+
 
 ```python
 features = extractor.get_reflacx_img_features(sample)
+norm_features = extractor.get_reflacx_img_features(sample, mean_features=torch.from_numpy(avg_feats))
 ```
 
 
 ```python
-features.shape
+features.shape, avg_feats.shape
 ```
 
 
 
 
-    torch.Size([1024, 7, 7])
+    (torch.Size([1024, 7, 7]), (1024, 7, 7))
 
+
+
+
+```python
+print(features[0][0,:], norm_features[0][0,:])
+```
+
+    tensor([-0.0388, -0.0393, -0.0405, -0.0425, -0.0420, -0.0414, -0.0380],
+           grad_fn=<SliceBackward0>) tensor([0.0030, 0.0019, 0.0014, 0.0005, 0.0008, 0.0002, 0.0032],
+           grad_fn=<SliceBackward0>)
 
 
 #### Feature Extraction para cada Fixation
@@ -115,11 +174,11 @@ for line in example:
     
 
 
-![](readme_files/feature_grid.png)
+![](feature_grid.png)
 
 Se torna necessário determinar, para cada fixation e sua respectiva região de atenção, quais regiões considerar
 
-![](readme_files/feature_grid_fixation.png)
+![](feature_grid_fixation.png)
 
 O crop da fixation está localizado em mais de uma região (quanto mais distante for o zoom, mais regiões). Para determinar um array de features para este ponto, faz-se uma média das features de cada região que o compreende, ponderada pelas áreas correspondentes. O resultado é um tensor de 1024 X 1, do mesmo formato das features extraídas da DensNet, porém só considerando as regiões relevantes para uma fixation
 
@@ -136,7 +195,7 @@ fixations_features[10].shape
 
 
 
-    (1024,)
+    torch.Size([1024])
 
 
 
@@ -145,12 +204,24 @@ fixations_features[10].shape
 Já para as arestas, outras 3 medidas foram consideradas até o momento:
 1. Gaze Path Edges: a posição de uma fixação na sequência de fixações do caminho do olhar. Uma fixação é vizinha da anterior e da próxima
 2. Euclidean Edges: a distância euclideana entre duas observações, com peso da aresta maior para vértices mais próximos. Como cada vértice possui sua posição (x, y) normalizada para [0, 1], o peso da aresta é 2^0.5 - distância.
-3. IOU edges: a similaridade entre as regiões da imagem obtidas entre duas fixações. Dois vértices podem estar próximos em distância, mas, devido a possíveis diferenças do nível de zoom a cada fixação, não possuirem muita área da imagem em comum. O peso da aresta é dado pela IOU das imagens de ambos os vértices
+3. IOU edges: a similaridade entre as regiões da imagem obtidas entre duas fixações. Dois vértices podem estar próximos em distância, mas, devido a possíveis diferenças do nível de zoom a cada fixação, não possuirem muita área da imagem em comum. O peso da aresta é dado pela IOU das imagens de ambos os vértices (talvez seja interessante linearizar isso e usar sqrt(IOU))
 
 ![](readme_files/edges.png)
 
-O grafo terá arestas de todos os três tipos, com 3 matrizes de adjacência. Talvez seja interessante considerar uma forma de consolidá-las em uma só para a implementação.
+Pode-se fazer um dataset para cada tipo de aresta, ou um único dataset, com grafos heterogêneos. É necessário cuidado neste caso, pois IOU e distâncias euclideanas possuem correlação. No momento, o treinamento inicial está sendo formulado com quatro grafos: um para cada tipo de aresta descrita acima, e um que combina arestas de IOU e Gaze Path.
 
+
+### Convolução em uma GNN: Message Passing
+
+Em uma rede em grafo, a convolução é uma operação que atualiza certas features de cada nó, agregando informações dos vizinhos. Um exemplo no caso do grafo proposto aqui, seria uma média das features extraídas para cada vértice, ponderada pelo tempo de permanência do olhar (duration). Depois de algumas camadas de convolução, o grafo é resumido usando alguma função agregadora dos vértices, como média, max, etc. Para daí, então, o grafo ser classificado como um todo.
+
+No caso específico do REFLACX, duas questões surgem por estas agregações, tanto no nível do nó a cada convolução, quanto do grafo como um todo no final. Pelo fato das imagens serem todas radiografias de tórax alinhadas da mesma forma, as features extraídas para cada fixation não podem ser comparadas entre si com uma simples média ou soma. Features importantes na região cardíaca não necessáriamente são importantes na área do diafragma e vice-versa, por exemplo.
+
+Por esta razão, faz-se necessário abordar este problema preservando as particularidades espaciais de cada nó, ou, pelo menos, de cada região.
+
+A solução proposta neste momento para isso é usar as arestas de IOU para a convolução, de forma que cada nó fique restrito a receber informações com mais peso de sua vizinhança imediata. No Final de todas as camadas de convolução, pode-se dizer que cada componente conexo (rever a figura acima, extrema direita) representa uma subregião relevante da imagem, que pode ser representada, com menos perda, por uma função agregadora.
+
+Essa abordagem geraria um novo grafo com "super-nós". Deste ponto em diante, alguma operação que preserve a espacialidade destas regiões teria que ser realizada, antes da classificação final.
 
 ### Preocupações Antecipadas
 
@@ -158,6 +229,3 @@ A estrutura proposta sugere alguns pontos de preocupação que devem ser estudad
 
 #### Orientação das arestas de Gaze Path
 Embora a abordagem mais simples para este tipo de aresta seja considerá-la não direcionada, existe um ponto a favor de um direcionamento. Uma fixação no instante t esclarece uma questão levantada em instantes ateriores, bem como levanta questões que serão esclarecidas em instantes futuros. Portanto, pode ser que seja importante diferenciar a "ida" da "volta", ou seja: talvez o peso da aresta que levanta questões seja diferente do peso da aresta que às esclarece.
-
-#### Redundância entre as relações euclideanas e as de IOU
-Como o intervalo entre as fixações tende a ser pequeno, é possível que a distância euclideana entre dois vértices esteja fortemente correlacionada com a área de IOU entre eles. Se este for o caso, seria como se o modelo considerasse os mesmos parâmetros duas vezes. Faz-se necessário um teste para medir esta correlação e, então, decidir se vale a pena manter as duas métricas.
