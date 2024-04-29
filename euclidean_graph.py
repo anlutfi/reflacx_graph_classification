@@ -28,7 +28,7 @@ class EuclideanGraph(GazeTrackingGraph):
 
 
     def calc_edge(self):
-        """Edge weights are inverse to distance, normalized to a [0, 1] interval.
+        """Edge weights are inverse to distance, normalized to a [0, 1] interval in a square space of side 1.
         """
         nodes = self.nodes
         result = [[0.0 for j in range(len(nodes))] for i in range(len(nodes))]
@@ -38,6 +38,8 @@ class EuclideanGraph(GazeTrackingGraph):
                     result[i][j] = 1.0 if self.self_edges else 0.0
                     continue
                 
+                # maximum distance in a square of size 1 is sqrt(2)
+                # so sqrt(2) is normalized to 1
                 result[i][j] = (2 ** 0.5 - 
                                 ((self.nodes[i].norm_x - self.nodes[j].norm_x) ** 2 +
                                 (self.nodes[i].norm_y - self.nodes[j].norm_y) ** 2
