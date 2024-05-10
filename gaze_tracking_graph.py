@@ -83,7 +83,8 @@ class GazeTrackingGraph:
                                          img_features=img_features,
                                          stdevs=stdevs)
             if node is None:
-                continue # TODO log missing nodes
+                self.log('missing node for fixation {}'.format(i))
+                continue
             if node.features is None:
                 self.log('bad features for fixation {}'.format(i))
                 raise IndexError
@@ -144,7 +145,7 @@ class GazeTrackingGraph:
     
     def write_nodes_csv(self, csv_file, makeline=lambda x: x):
         for i, node in enumerate(self.nodes):
-            csv_file.write(makeline(CSV_SEP.join([str(i), str(node)]))) #TODO param i from lambda
+            csv_file.write(makeline(CSV_SEP.join([str(i), str(node)])))
 
     
     def write_edges_csv(self, csv_file, makeline=lambda x: x):
