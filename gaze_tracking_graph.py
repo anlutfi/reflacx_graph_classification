@@ -3,9 +3,10 @@ from fixation_node import FixationNode
 from pyvis.network import Network
 from os.path import sep
 
+from rlogger import RLogger
 from reflacx_labels import PHASE_1_LABELS, PHASE_2_3_LABELS
 import label_regularization as lr
-from consts import CSV_SEP
+from consts import CSV_SEP, FIX_OUT_OF_CHEST
 
 class GazeTrackingGraph:
     """Represents a REFLACX datapoint as a graph of its gaze fixations
@@ -47,6 +48,8 @@ class GazeTrackingGraph:
         if reflacx_sample is None:
             reflacx_sample = metadata.get_sample(dicom_id, reflacx_id)
         
+        self.log = RLogger(__name__, self.__class__.__name__)
+        
         self.dicom_id = dicom_id
         self.reflacx_id = reflacx_id
         
@@ -82,11 +85,11 @@ class GazeTrackingGraph:
                                          feature_extractor=feature_extractor,
                                          img_features=img_features,
                                          stdevs=stdevs)
-            if node is None:
-                self.log('missing node for fixation {}'.format(i))
+            if node == FIX_OUT_OF_CHEST:
+                self.log('{} -- {} \n  Fixation {} out of chest bounding box\n'.format(self.dicom_id, self.reflacx_id, i))
                 continue
             if node.features is None:
-                self.log('bad features for fixation {}'.format(i))
+                self.log('{} -- {} \n  bad features for fixation {}'.format(self.dicom_id, self.reflacx_id, i))
                 raise IndexError
             self.nodes.append(node)
         
