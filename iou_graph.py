@@ -38,17 +38,20 @@ class IOUGraph(GazeTrackingGraph):
                 if i == j:
                     result[i][j] = 1.0 if self.self_edges else 0.0
                     continue
-                xA = max(node_i.viewed_x_min, node_j.viewed_x_min)
-                yA = max(node_i.viewed_y_min, node_j.viewed_y_min)
-                xB = min(node_i.viewed_x_max, node_j.viewed_x_max)
-                yB = min(node_i.viewed_y_max, node_j.viewed_y_max)
+                i_x_min, i_y_min = node_i.topleft
+                i_x_max, i_y_max = node_i.bottomright
+                j_x_min, j_y_min = node_j.topleft
+                j_x_max, j_y_max = node_j.bottomright
+                
+                xA = max(i_x_min, j_x_min)
+                yA = max(i_y_min, j_y_min)
+                xB = min(i_x_max, j_x_max)
+                yB = min(i_y_max, j_y_max)
                 
                 intersec = max(0, xB - xA + 1) * max(0, yB - yA + 1)
                 
-                i_area = ((node_i.viewed_x_max - node_i.viewed_x_min + 1) *
-                        (node_i.viewed_y_max - node_i.viewed_y_min + 1))
-                j_area = ((node_j.viewed_x_max - node_j.viewed_x_min + 1) *
-                        (node_j.viewed_y_max - node_j.viewed_y_min + 1))
+                i_area = ((i_x_max - i_x_min + 1) * (i_y_max - i_y_min + 1))
+                j_area = ((j_x_max - j_x_min + 1) * (j_y_max - j_y_min + 1))
                 
                 iou = intersec / (i_area + j_area - intersec)
 
