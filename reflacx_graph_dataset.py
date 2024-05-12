@@ -93,9 +93,7 @@ def generate_csv_dataset(name,
                 i_csv.write(curr_line(sep.join([dicom_id, reflacx_id])))
                 g.write_nodes_csv(n_csv, curr_line)
                 g.write_edges_csv(e_csv, curr_line)
-            except KeyboardInterrupt:
-                raise KeyboardInterrupt #TODO fix this shit
-            except IndexError:
+            except (IndexError, AttributeError):
                 log('bad graph for pair {} --- {}'.format(dicom_id,
                                                             reflacx_id),
                     exception=True)
