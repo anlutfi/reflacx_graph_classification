@@ -41,8 +41,8 @@ class EuclideanGraph(GazeTrackingGraph):
                 # maximum distance in a square of size 1 is sqrt(2)
                 # so sqrt(2) is normalized to 1
                 result[i][j] = (2 ** 0.5 - 
-                                ((self.nodes[i].norm_x - self.nodes[j].norm_x) ** 2 +
-                                (self.nodes[i].norm_y - self.nodes[j].norm_y) ** 2
+                                ((node_i.norm_x - node_j.norm_x) ** 2 +
+                                (node_i.norm_y - node_j.norm_y) ** 2
                                 ) ** 0.5
                                ) / (2 ** 0.5)
                 result[j][i] = result[i][j]
