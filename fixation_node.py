@@ -1,5 +1,4 @@
-from rlogger import RLogger
-from consts import CSV_SEP
+from consts import CSV_SEP, FIX_OUT_OF_CHEST
 
 class FixationNode:
     """A graph's node representing a REFLACX fixation
@@ -42,6 +41,9 @@ class FixationNode:
         norm_x = ((fixation['x_position'] - chest_bb['xmin']) / bb_xrange)
         norm_y = ((fixation['y_position'] - chest_bb['ymin']) / bb_yrange)
         
+        if norm_x < 0 or norm_x > 1 or norm_y < 0 or norm_y > 1:
+            return FIX_OUT_OF_CHEST
+        
         ang_x = fixation['angular_resolution_x_pixels_per_degree']
         ang_y = fixation['angular_resolution_y_pixels_per_degree']
 
@@ -59,8 +61,6 @@ class FixationNode:
         viewed_y_max = ((min(chest_bb['ymax'], viewed_y_max) - chest_bb['ymin'])
                         / bb_yrange)
 
-        if norm_x < 0 or norm_x > 1 or norm_y < 0 or norm_y > 1:
-            return None
         return FixationNode(id,
                             fixation,
                             norm_x,
@@ -90,8 +90,6 @@ class FixationNode:
                   stdevs=1):
         """See FixationNode.new_node()
         """
-        self.log = RLogger(__name__, self.__class__.__name__)
-        
         self.id = id
         self.duration = (fixation['timestamp_end_fixation'] -
                          fixation['timestamp_start_fixation'])
