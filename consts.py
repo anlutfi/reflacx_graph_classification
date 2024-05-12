@@ -1,1 +1,2 @@
 CSV_SEP = ','
+FIX_OUT_OF_CHEST = -1
