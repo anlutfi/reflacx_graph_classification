@@ -12,6 +12,8 @@ class GazeTrackingGraph:
     """Represents a REFLACX datapoint as a graph of its gaze fixations
     Nodes are each fixation and edges are to be defined by inheritance
     """
+    edge_type_names = ['edges']
+    
     def __init__(self,
                  dicom_id,
                  reflacx_id,
@@ -83,11 +85,14 @@ class GazeTrackingGraph:
                 self.log('{} -- {} \n  Fixation {} out of chest bounding box\n'.format(self.dicom_id, self.reflacx_id, i))
                 continue
             if node.features is None:
-                self.log('{} -- {} \n  bad features for fixation {}'.format(self.dicom_id, self.reflacx_id, i))
+                self.log('{} -- {} \n  Bad features for fixation {}'.format(self.dicom_id, self.reflacx_id, i))
                 raise IndexError
             self.nodes.append(node)
         
-        self.adj_mat = None
+        #self.adj_mat = None
+        ## made for a heterogeneous graph with multiple edge types
+        # self.edges[name] = square adjacency matrix
+        self.edges = {name: [] for name in GazeTrackingGraph.edge_type_names}
         self.self_edges = self_edges
         self.bidirectional = bidirectional
         self.calc_edge()
@@ -99,6 +104,11 @@ class GazeTrackingGraph:
         to be used as header of csv file
         """
         return CSV_SEP.join(["src_id", "dst_id", "weight"])
+    
+
+    @staticmethod
+    def get_edge_type_names():
+        return GazeTrackingGraph.edge_type_names
     
     
     def calc_edge(self):
@@ -153,13 +163,16 @@ class GazeTrackingGraph:
             csv_file.write(makeline(CSV_SEP.join([str(i), str(node)])))
 
     
-    def write_edges_csv(self, csv_file, makeline=lambda x: x):
-        for i, node in enumerate(self.nodes):
-            for j, node in enumerate(self.nodes):
-                if self.adj_mat[i, j] != 0:
-                    csv_file.write(makeline(CSV_SEP.join([str(i),
-                                                          str(j),
-                                                          str(self.adj_mat[i, j])])))
+    def write_edges_csv(self, csv_dict, makeline=lambda x: x):
+        for edge_type in csv_dict:
+            csv_file = csv_dict[edge_type]
+            adj_mat = self.edges[edge_type]
+            for i in range(len(self.nodes)):
+                for j in range(len(self.nodes)):
+                    if adj_mat[i, j] != 0:
+                        csv_file.write(makeline(CSV_SEP.join([str(i),
+                                                              str(j),
+                                                              str(adj_mat[i, j])])))
 
     
     def graph_csv(self, labels='common'):
