@@ -45,6 +45,8 @@ def generate_csv_dataset(name,
         else: # .npy
             mean_features = torch.from_numpy(np.load(mean_features_fpath))
 
+    # TODO adjust for heterograph
+    
     with open(os.sep.join([outdir, filenames['meta']]), 'w') as f:
         f.writelines(['dataset_name: {}'.format(name),
                         '\nedge_data:',
