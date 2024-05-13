@@ -12,14 +12,6 @@ class GazeTrackingGraph:
     """Represents a REFLACX datapoint as a graph of its gaze fixations
     Nodes are each fixation and edges are to be defined by inheritance
     """
-    @staticmethod
-    def edge_csv_header():
-        """returns a header of class attributes' names
-        to be used as header of csv file
-        """
-        return CSV_SEP.join(["src_id", "dst_id", "weight"])
-    
-    
     def __init__(self,
                  dicom_id,
                  reflacx_id,
@@ -101,6 +93,14 @@ class GazeTrackingGraph:
         self.calc_edge()
 
 
+    @staticmethod
+    def edge_csv_header():
+        """returns a header of class attributes' names
+        to be used as header of csv file
+        """
+        return CSV_SEP.join(["src_id", "dst_id", "weight"])
+    
+    
     def calc_edge(self):
         """Classes inheriting GazeTrackingGraph need
         to fill a adjacency matrix (self.adj_mat).
