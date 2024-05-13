@@ -27,6 +27,7 @@ class GazeTrackingGraph:
                  metadata=None,
                  stdevs=1,
                  feature_extractor=DenseFeatureExtractor(),
+                 img_features=None,
                  mean_features=None,
                  label_reg=lr.linear_regularization,
                  self_edges=True,
@@ -74,9 +75,10 @@ class GazeTrackingGraph:
                               and k in reflacx_sample.data}
 
         self.nodes = []
-        img_features = feature_extractor.get_img_features(self.xray,
-                                                          to_numpy=True, 
-                                                          mean_features=mean_features)
+        if img_features is None:
+            img_features = feature_extractor.get_img_features(self.xray,
+                                                              to_numpy=True, 
+                                                              mean_features=mean_features)
         for i, fixation in enumerate(reflacx_sample.get_fixations()):
             node = FixationNode.new_node(i,
                                          fixation,

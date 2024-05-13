@@ -71,7 +71,15 @@ def generate_csv_dataset(name,
     i = 0
     dicom_ids = metadata.list_dicom_ids()
     d_size = len(dicom_ids)
-    for di, dicom_id in enumerate(dicom_ids): 
+    for di, dicom_id in enumerate(dicom_ids):
+        xray = metadata.get_dicom_img(dicom_id)
+        if xray is None:
+            log('missing dicom img for if {}'.format(dicom_id),
+                exception=True)
+            continue
+        img_features = feature_extractor.get_img_features(xray,
+                                                          to_numpy=True,
+                                                          mean_features=mean_features)
         reflacx_ids = metadata.list_reflacx_ids(dicom_id)
         for ri, reflacx_id in enumerate(reflacx_ids):
             r_size = len(reflacx_ids)
@@ -88,6 +96,7 @@ def generate_csv_dataset(name,
                             metadata=metadata,
                             stdevs=stdevs,
                             feature_extractor=feature_extractor,
+                            img_features=img_features,
                             mean_features=mean_features)
                 g_csv.write(curr_line(g.graph_csv(labels='common')))
                 i_csv.write(curr_line(sep.join([dicom_id, reflacx_id])))
