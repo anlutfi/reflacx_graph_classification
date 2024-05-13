@@ -166,7 +166,11 @@ class GazeTrackingGraph:
     def write_edges_csv(self, csv_dict, makeline=lambda x: x):
         for edge_type in csv_dict:
             csv_file = csv_dict[edge_type]
-            adj_mat = self.edges[edge_type]
+            try:
+                adj_mat = self.edges[edge_type]
+            except KeyError:
+                self.log('edge type {} in csv file not present in graph ({})'.format(edge_type,
+                ', '.join([str(x) for x in self.edges.keys()])))
             for i in range(len(self.nodes)):
                 for j in range(len(self.nodes)):
                     if adj_mat[i, j] != 0:

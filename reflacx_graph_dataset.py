@@ -45,18 +45,42 @@ def generate_csv_dataset(name,
         else: # .npy
             mean_features = torch.from_numpy(np.load(mean_features_fpath))
 
-    # TODO adjust for heterograph
-    
+    # TODO test adjustment for heterograph
+
+    #dataset_name: mini_hetero_dataset
+    #edge_data:
+    #- file_name: edges_0.csv
+    #  etype: [user, follow, user]
+    #- file_name: edges_1.csv
+    #  etype: [user, like, item]
+    #node_data:
+    #- file_name: nodes_0.csv
+    #  ntype: user
+    #- file_name: nodes_1.csv
+    #  ntype: item
+
+    edge_types = graph_class.get_edge_type_names()
+    prefix, ext = filenames['edges'].split('.')
+    edge_csv_lines = []
+    edge_csv_paths = {}
+    for i, edge_type in enumerate(edge_types):
+        edge_csv_paths[edge_type] = '{}_{}.{}'.format(prefix, i, ext)
+        edge_csv_lines.append('\n- file_name: {}'.format(edge_csv_paths[edge_type]))
+        edge_csv_lines.append('\n  etype: [fixation, {}, fixation]'.format(edge_type))
+        
     with open(os.sep.join([outdir, filenames['meta']]), 'w') as f:
         f.writelines(['dataset_name: {}'.format(name),
-                        '\nedge_data:',
-                        '\n- file_name: {}'.format(filenames['edges']),
-                        '\nnode_data:',
-                        '\n- file_name: {}'.format(filenames['nodes']),
-                        '\ngraph_data:',
-                        '\n  file_name: {}'.format(filenames['graphs'])])
+                      '\nedge_data:']
+                      + edge_csv_lines
+                      + ['\nnode_data:',
+                         '\n- file_name: {}'.format(filenames['nodes']),
+                         '\n  ntype: fixation',
+                         '\ngraph_data:',
+                         '\n  file_name: {}'.format(filenames['graphs'])])
 
-    e_csv = open(os.sep.join([outdir, filenames['edges']]), 'w')
+    e_csvs = {e_type: open(os.sep.join([outdir, edge_csv_paths[e_type]]), 'w')
+              for e_type in edge_csv_paths}
+    #e_csv = open(os.sep.join([outdir, filenames['edges']]), 'w')
     n_csv = open(os.sep.join([outdir, filenames['nodes']]), 'w')
     g_csv = open(os.sep.join([outdir, filenames['graphs']]), 'w') 
     i_csv = open(os.sep.join([outdir, filenames['index']]), 'w') 
@@ -66,7 +90,9 @@ def generate_csv_dataset(name,
     csv_header = lambda line: csv_line(g_id, line)
     
     n_csv.write(csv_header(FixationNode.csv_header()))
-    e_csv.write(csv_header(graph_class.edge_csv_header()))
+    #e_csv.write(csv_header(graph_class.edge_csv_header()))
+    for e_type in e_csvs:
+        e_csvs[e_type].write(csv_header(graph_class.edge_csv_header()))
     g_csv.write(csv_header('labels'))
     i_csv.write(csv_header(sep.join(['dicom_id', 'reflacx_id'])))
     
@@ -104,7 +130,7 @@ def generate_csv_dataset(name,
                 g_csv.write(curr_line(g.graph_csv(labels='common')))
                 i_csv.write(curr_line(sep.join([dicom_id, reflacx_id])))
                 g.write_nodes_csv(n_csv, curr_line)
-                g.write_edges_csv(e_csv, curr_line)
+                g.write_edges_csv(e_csvs, curr_line)
             except (IndexError, AttributeError):
                 log('bad graph for pair {} --- {}'.format(dicom_id,
                                                           reflacx_id),
