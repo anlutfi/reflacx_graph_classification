@@ -47,4 +47,4 @@ class EuclideanGraph(GazeTrackingGraph):
                                ) / (2 ** 0.5)
                 result[j][i] = result[i][j]
 
-        self.adj_mat = np.array(result)
+        self.edges['edges'] = np.array(result)

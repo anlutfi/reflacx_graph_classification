@@ -57,4 +57,4 @@ class IOUGraph(GazeTrackingGraph):
 
                 result[i][j] = result[j][i] = iou
 
-        self.adj_mat = np.array(result)
+        self.edges['edges'] = np.array(result)

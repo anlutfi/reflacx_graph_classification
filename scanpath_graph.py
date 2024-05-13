@@ -43,4 +43,4 @@ class ScanPathGraph(GazeTrackingGraph):
                     if self.bidirectional:
                         result[j][i] = result[i][j]
 
-        self.adj_mat = np.array(result)
+        self.edges['edges'] = np.array(result)
