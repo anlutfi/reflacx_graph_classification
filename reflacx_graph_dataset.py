@@ -91,20 +91,21 @@ def generate_csv_dataset(name,
             try:
                 curr_line = lambda line: csv_line(i, line)
                 g = graph_class(dicom_id,
-                            reflacx_id,
-                            reflacx_sample=metadata.get_sample(dicom_id, reflacx_id),
-                            metadata=metadata,
-                            stdevs=stdevs,
-                            feature_extractor=feature_extractor,
-                            img_features=img_features,
-                            mean_features=mean_features)
+                                reflacx_id,
+                                reflacx_sample=metadata.get_sample(dicom_id,
+                                                                   reflacx_id),
+                                metadata=metadata,
+                                stdevs=stdevs,
+                                feature_extractor=feature_extractor,
+                                img_features=img_features,
+                                mean_features=mean_features)
                 g_csv.write(curr_line(g.graph_csv(labels='common')))
                 i_csv.write(curr_line(sep.join([dicom_id, reflacx_id])))
                 g.write_nodes_csv(n_csv, curr_line)
                 g.write_edges_csv(e_csv, curr_line)
             except (IndexError, AttributeError):
                 log('bad graph for pair {} --- {}'.format(dicom_id,
-                                                            reflacx_id),
+                                                          reflacx_id),
                     exception=True)
                 i += 1
                 continue
