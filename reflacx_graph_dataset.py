@@ -140,7 +140,8 @@ def generate_csv_dataset(name,
             i += 1
    
     n_csv.close()
-    e_csv.close()
+    for e_csv in e_csvs.values():
+        e_csv.close()
     g_csv.close()
 
         
