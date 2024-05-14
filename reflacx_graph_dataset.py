@@ -66,7 +66,6 @@ def generate_csv_dataset(name,
 
     e_csvs = {e_type: open(os.sep.join([outdir, edge_csv_paths[e_type]]), 'w')
               for e_type in edge_csv_paths}
-    #e_csv = open(os.sep.join([outdir, filenames['edges']]), 'w')
     n_csv = open(os.sep.join([outdir, filenames['nodes']]), 'w')
     g_csv = open(os.sep.join([outdir, filenames['graphs']]), 'w') 
     i_csv = open(os.sep.join([outdir, filenames['index']]), 'w') 
@@ -76,7 +75,6 @@ def generate_csv_dataset(name,
     csv_header = lambda line: csv_line(g_id, line)
     
     n_csv.write(csv_header(FixationNode.csv_header()))
-    #e_csv.write(csv_header(graph_class.edge_csv_header()))
     for e_type in e_csvs:
         e_csvs[e_type].write(csv_header(graph_class.edge_csv_header()))
     g_csv.write(csv_header('labels'))
