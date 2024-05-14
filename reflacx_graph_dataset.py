@@ -45,20 +45,6 @@ def generate_csv_dataset(name,
         else: # .npy
             mean_features = torch.from_numpy(np.load(mean_features_fpath))
 
-    # TODO test adjustment for heterograph
-
-    #dataset_name: mini_hetero_dataset
-    #edge_data:
-    #- file_name: edges_0.csv
-    #  etype: [user, follow, user]
-    #- file_name: edges_1.csv
-    #  etype: [user, like, item]
-    #node_data:
-    #- file_name: nodes_0.csv
-    #  ntype: user
-    #- file_name: nodes_1.csv
-    #  ntype: item
-
     edge_types = graph_class.get_edge_type_names()
     prefix, ext = filenames['edges'].split('.')
     edge_csv_lines = []
