@@ -83,46 +83,49 @@ def generate_csv_dataset(name,
     i = 0
     dicom_ids = metadata.list_dicom_ids()
     d_size = len(dicom_ids)
-    for di, dicom_id in enumerate(dicom_ids):
-        xray = metadata.get_dicom_img(dicom_id)
-        if xray is None:
-            log('missing dicom img for if {}'.format(dicom_id),
-                exception=True)
-            continue
-        img_features = feature_extractor.get_img_features(xray,
-                                                          to_numpy=True,
-                                                          mean_features=mean_features)
-        reflacx_ids = metadata.list_reflacx_ids(dicom_id)
-        for ri, reflacx_id in enumerate(reflacx_ids):
-            r_size = len(reflacx_ids)
-            print('dicom_id {} of {}  ---  reflacx_id {} of {}'.format(di + 1,
-                                                                       d_size,
-                                                                       ri + 1,
-                                                                       r_size),
-                  end='\r')
-            try:
-                curr_line = lambda line: csv_line(i, line)
-                g = graph_class(dicom_id,
-                                reflacx_id,
-                                reflacx_sample=metadata.get_sample(dicom_id,
-                                                                   reflacx_id),
-                                metadata=metadata,
-                                stdevs=stdevs,
-                                feature_extractor=feature_extractor,
-                                img_features=img_features,
-                                mean_features=mean_features)
-                g_csv.write(curr_line(g.graph_csv(labels='common')))
-                i_csv.write(curr_line(sep.join([dicom_id, reflacx_id])))
-                g.write_nodes_csv(n_csv, curr_line)
-                g.write_edges_csv(e_csvs, curr_line)
-            except (IndexError, AttributeError):
-                log('bad graph for pair {} --- {}'.format(dicom_id,
-                                                          reflacx_id),
+    try:
+        for di, dicom_id in enumerate(dicom_ids):
+            xray = metadata.get_dicom_img(dicom_id)
+            if xray is None:
+                log('missing dicom img for if {}'.format(dicom_id),
                     exception=True)
-                i += 1
                 continue
-            i += 1
-   
+            img_features = feature_extractor.get_img_features(xray,
+                                                            to_numpy=True,
+                                                            mean_features=mean_features)
+            reflacx_ids = metadata.list_reflacx_ids(dicom_id)
+            for ri, reflacx_id in enumerate(reflacx_ids):
+                r_size = len(reflacx_ids)
+                print('dicom_id {} of {}  ---  reflacx_id {} of {}'.format(di + 1,
+                                                                        d_size,
+                                                                        ri + 1,
+                                                                        r_size),
+                    end='\r')
+                try:
+                    curr_line = lambda line: csv_line(i, line)
+                    g = graph_class(dicom_id,
+                                    reflacx_id,
+                                    reflacx_sample=metadata.get_sample(dicom_id,
+                                                                    reflacx_id),
+                                    metadata=metadata,
+                                    stdevs=stdevs,
+                                    feature_extractor=feature_extractor,
+                                    img_features=img_features,
+                                    mean_features=mean_features)
+                    g_csv.write(curr_line(g.graph_csv(labels='common')))
+                    i_csv.write(curr_line(sep.join([dicom_id, reflacx_id])))
+                    g.write_nodes_csv(n_csv, curr_line)
+                    g.write_edges_csv(e_csvs, curr_line)
+                except (IndexError, AttributeError):
+                    log('bad graph for pair {} --- {}'.format(dicom_id,
+                                                            reflacx_id),
+                        exception=True)
+                    i += 1
+                    continue
+                i += 1
+    except KeyboardInterrupt:
+        pass
+    
     n_csv.close()
     for e_csv in e_csvs.values():
         e_csv.close()
