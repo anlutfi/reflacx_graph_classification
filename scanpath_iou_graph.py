@@ -21,6 +21,7 @@ class ScanPathIOUGraph(GazeTrackingGraph):
                  metadata=None,
                  stdevs=1,
                  feature_extractor=DenseFeatureExtractor(),
+                 img_features=None,
                  mean_features=None,
                  self_edges=True,
                  bidirectional=True):
@@ -30,10 +31,11 @@ class ScanPathIOUGraph(GazeTrackingGraph):
                          metadata,
                          stdevs,
                          feature_extractor,
+                         img_features,
                          mean_features,
                          self_edges=self_edges,
                          bidirectional=bidirectional)
-        self.name = 'ScanPathGraph_{}_{}'.format(self.dicom_id, self.reflacx_id)
+        self.name = 'ScanPathIOUGraph_{}_{}'.format(self.dicom_id, self.reflacx_id)
 
 
     def calc_edge(self):

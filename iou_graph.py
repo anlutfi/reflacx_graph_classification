@@ -14,6 +14,7 @@ class IOUGraph(GazeTrackingGraph):
                  metadata=None,
                  stdevs=1,
                  feature_extractor=DenseFeatureExtractor(),
+                 img_features=None,
                  mean_features=None,
                  self_edges=True):
         super().__init__(dicom_id,
@@ -22,6 +23,7 @@ class IOUGraph(GazeTrackingGraph):
                          metadata,
                          stdevs,
                          feature_extractor,
+                         img_features,
                          mean_features,
                          self_edges=self_edges)
         self.name = 'IOUGraph_{}_{}'.format(self.dicom_id, self.reflacx_id)
