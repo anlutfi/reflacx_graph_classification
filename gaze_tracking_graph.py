@@ -139,13 +139,14 @@ class GazeTrackingGraph:
                                 else "#97c2fc")),
                     shape='circle')
         
-        for i in range(len(self.adj_mat)):
-            for j in range(i + 1, len(self.adj_mat)):
-                if i == j or self.adj_mat[i][j] == 0:
+        edges = self.edges['edges']
+        for i in range(len(edges)):
+            for j in range(i + 1, len(edges)):
+                if i == j or edges[i][j] == 0:
                     continue
                 g.add_edge(i,
                            j,
-                           label=("{:.2f}".format(self.adj_mat[i][j])
+                           label=("{:.2f}".format(edges[i][j])
                                   if edge_labels
                                   else ""),
                            color=color)
