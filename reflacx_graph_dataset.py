@@ -27,7 +27,7 @@ def generate_csv_dataset(name,
                          log_dir='.'):
     log = RLogger(__name__)
     
-    outdir = './{}'.format(name) if outdir is None else outdir
+    outdir = '{}/{}'.format('.' if outdir is None else outdir, name)
     os.makedirs(outdir, exist_ok=True)
 
     os.makedirs(log_dir, exist_ok=True)
