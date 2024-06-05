@@ -50,10 +50,10 @@ class IOUGraph(GazeTrackingGraph):
                 xB = min(i_x_max, j_x_max)
                 yB = min(i_y_max, j_y_max)
                 
-                intersec = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+                intersec = max(0, xB - xA) * max(0, yB - yA)
                 
-                i_area = ((i_x_max - i_x_min + 1) * (i_y_max - i_y_min + 1))
-                j_area = ((j_x_max - j_x_min + 1) * (j_y_max - j_y_min + 1))
+                i_area = ((i_x_max - i_x_min) * (i_y_max - i_y_min))
+                j_area = ((j_x_max - j_x_min) * (j_y_max - j_y_min))
                 
                 iou = intersec / (i_area + j_area - intersec)
 
