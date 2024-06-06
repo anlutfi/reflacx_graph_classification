@@ -1,4 +1,5 @@
 import dgl
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -26,3 +27,14 @@ def draw(graph,
     g = dgl.to_networkx(graph.cpu())
     plt.figure(figsize=figsize)
     nx.draw(g, **options)
+
+
+def get_connected_component(adj, start=0):
+    result = []
+    q = [start]
+    while len(q) > 0:
+        n = q.pop(0)
+        result.append(n)
+        adj[:, n] = 0
+        q = q + list(np.where(adj[n] != 0)[0])
+    return set(result)
