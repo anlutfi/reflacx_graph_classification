@@ -71,12 +71,25 @@ def grid_readout(grid, name, aggr=dgl.mean_nodes): # TODO preserve grads
     shape = (sz, sz) + node[name].shape
     result = torch.zeros(shape)
 
+    result = None
     for i, line in enumerate(grid):
+        result_line = None
         for j, sg in enumerate(line):
-            if len(shape) == 2:
-                result[i, j] = aggr(sg, name)
-            else: # 3D
-                result[i, j, :] = aggr(sg, name)
+            readout = aggr(sg, name).unsqueeze(0)
+            if result_line is None:
+                result_line = readout.clone()
+            else:
+                result_line = torch.cat((result_line, readout), 0)
+        if result is None:
+            result = result_line.clone()#.unsqueeze...
+        else:
+            pass # TODO concatenate lines
+
+
+#            if len(shape) == 2:
+#                result[i, j] = aggr(sg, name)
+#            else: # 3D
+#                result[i, j, :] = aggr(sg, name)
 
     return result
     
