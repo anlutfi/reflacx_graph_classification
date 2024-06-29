@@ -1,4 +1,5 @@
 import dgl
+import torch
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -38,3 +39,45 @@ def get_connected_component(adj, start=0):
         adj[:, n] = 0
         q = q + list(np.where(adj[n] != 0)[0])
     return set(result)
+
+
+def gridify(g,
+            gridsize,
+            x_nm='norm_x',
+            y_nm='norm_y'):
+    node_f = lambda i: get_node(g, i)
+    
+    grid = [[[] for j in range(gridsize)] for i in range(gridsize)]
+    for i in (int(i) for i in g.nodes()):
+        n = node_f(i)
+        x = min(int(n[x_nm] * gridsize), gridsize - 1)
+        y = min(int(n[y_nm] * gridsize), gridsize - 1)
+        grid[x][y].append(i)
+
+    return [[g.subgraph(grid[i][j]) for j in range(len(grid[0]))]
+            for i in range(len(grid))]
+
+
+def grid_readout(grid, name, aggr=dgl.mean_nodes): # TODO preserve grads
+    sz = len(grid)
+    node = None
+    for line in grid:
+        for sg in line:
+            try:
+                node = get_node(sg, 0)
+                break
+            except AssertionError:
+                continue
+    shape = (sz, sz) + node[name].shape
+    result = torch.zeros(shape)
+
+    for i, line in enumerate(grid):
+        for j, sg in enumerate(line):
+            if len(shape) == 2:
+                result[i, j] = aggr(sg, name)
+            else: # 3D
+                result[i, j, :] = aggr(sg, name)
+
+    return result
+    
+
