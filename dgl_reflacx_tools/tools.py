@@ -45,17 +45,22 @@ def gridify(g,
             gridsize,
             x_nm='norm_x',
             y_nm='norm_y'):
-    node_f = lambda i: get_node(g, i)
+    xs = (g.ndata[x_nm] * gridsize).int()
+    ys = (g.ndata[y_nm] * gridsize).int()
+    xs[torch.where(xs > gridsize - 1)] = gridsize - 1
+    ys[torch.where(ys > gridsize - 1)] = gridsize - 1
     
-    grid = [[[] for j in range(gridsize)] for i in range(gridsize)]
-    for i in (int(i) for i in g.nodes()):
-        n = node_f(i)
-        x = min(int(n[x_nm] * gridsize), gridsize - 1)
-        y = min(int(n[y_nm] * gridsize), gridsize - 1)
-        grid[x][y].append(i)
+    result = []
+    for i in range(gridsize):
+        line = []
+        result.append(line)
+        for j in range(gridsize):
+            yis = torch.where(ys == j)[0]
+            xis = torch.where(xs[yis] == i)
+            nis = yis[xis]
+            line.append(g.subgraph(nis))
 
-    return [[g.subgraph(grid[i][j]) for j in range(len(grid[0]))]
-            for i in range(len(grid))]
+    return result
 
 
 def grid_readout(grid, name, aggr=dgl.mean_nodes, replace_nan=True):
@@ -64,8 +69,10 @@ def grid_readout(grid, name, aggr=dgl.mean_nodes, replace_nan=True):
         result_line = None
         for sg in line:
             readout = aggr(sg, name)
+            # if a subgraph for a grid cell is empty (0 nodes)
             if replace_nan and torch.all(readout.isnan()):
                 readout = torch.zeros_like(readout)
+            
             if result_line is None:
                 result_line = readout
             else:
