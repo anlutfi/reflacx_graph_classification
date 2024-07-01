@@ -45,22 +45,28 @@ def gridify(g,
             gridsize,
             x_nm='norm_x',
             y_nm='norm_y'):
-    xs = (g.ndata[x_nm] * gridsize).int()
-    ys = (g.ndata[y_nm] * gridsize).int()
-    xs[torch.where(xs > gridsize - 1)] = gridsize - 1
-    ys[torch.where(ys > gridsize - 1)] = gridsize - 1
+    batch_xs = (g.ndata[x_nm] * gridsize).int()
+    batch_ys = (g.ndata[y_nm] * gridsize).int()
+    batch_xs[torch.where(batch_xs > gridsize - 1)] = gridsize - 1
+    batch_ys[torch.where(batch_ys > gridsize - 1)] = gridsize - 1
     
     result = []
-    for i in range(gridsize):
-        line = []
-        result.append(line)
-        for j in range(gridsize):
-            yis = torch.where(ys == j)[0]
-            xis = torch.where(xs[yis] == i)
-            nis = yis[xis]
-            line.append(g.subgraph(nis))
-
-    return result
+    offset = 0
+    for xs, ys in zip(torch.split(batch_xs, tuple(g.batch_num_nodes())),
+                      torch.split(batch_ys, tuple(g.batch_num_nodes()))):
+        grid = []
+        for i in range(gridsize):
+            line = []
+            grid.append(line)
+            for j in range(gridsize):
+                yis = torch.where(ys == j)[0]
+                xis = torch.where(xs[yis] == i)
+                nis = yis[xis] + offset
+                line.append(g.subgraph(nis))
+        result.append(grid)
+        offset += len(xs)
+    
+    return result if len(result) > 1 else result[0]
 
 
 def grid_readout(grid, name, aggr=dgl.mean_nodes, replace_nan=True):
@@ -85,5 +91,12 @@ def grid_readout(grid, name, aggr=dgl.mean_nodes, replace_nan=True):
             result = torch.cat((result, result_line), 0)
 
     return result
+
+
+def batch_grid_readout(grids, name, aggr=dgl.mean_nodes, replace_nan=True):
+    readouts = [grid_readout(grid, 'feats',
+                             lambda x, y: dgl.mean_nodes(x, y).cpu())
+                for grid in grids]
+    return torch.cat([r.unsqueeze(0) for r in readouts], 0)
     
 
