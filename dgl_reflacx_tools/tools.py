@@ -69,34 +69,44 @@ def gridify(g,
     return result if len(result) > 1 else result[0]
 
 
-def grid_readout(grid, name, aggr=dgl.mean_nodes, replace_nan=True):
-    result = None
-    for line in grid:
-        result_line = None
-        for sg in line:
-            readout = aggr(sg, name)
-            # if a subgraph for a grid cell is empty (0 nodes)
-            if replace_nan and torch.all(readout.isnan()):
-                readout = torch.zeros_like(readout)
+def grid_readout(grid_or_batch,
+                 name,
+                 aggr=dgl.mean_nodes,
+                 replace_nan=True,
+                 leaf_class_name='DGLGraph'):
+    def call(grid):
+        result = None
+        for line in grid:
+            result_line = None
+            for sg in line:
+                readout = aggr(sg, name)
+                # if a subgraph for a grid cell is empty (0 nodes)
+                if replace_nan and torch.all(readout.isnan()):
+                    readout = torch.zeros_like(readout)
+                
+                if result_line is None:
+                    result_line = readout
+                else:
+                    result_line = torch.cat((result_line,readout), 0)
             
-            if result_line is None:
-                result_line = readout
+            result_line = result_line.unsqueeze(0)
+            if result is None:
+                result = result_line
             else:
-                result_line = torch.cat((result_line,readout), 0)
-        
-        result_line = result_line.unsqueeze(0)
-        if result is None:
-            result = result_line
-        else:
-            result = torch.cat((result, result_line), 0)
+                result = torch.cat((result, result_line), 0)
 
-    return result
+        return result
+    
+    dims = 0
+    g = grid_or_batch
+    while g.__class__.__name__ != leaf_class_name:
+        g = g[0]
+        dims += 1
 
-
-def batch_grid_readout(grids, name, aggr=dgl.mean_nodes, replace_nan=True):
-    readouts = [grid_readout(grid, 'feats',
-                             lambda x, y: dgl.mean_nodes(x, y).cpu())
-                for grid in grids]
-    return torch.cat([r.unsqueeze(0) for r in readouts], 0)
+    if dims == 2: # is a single grid
+        return call(grid_or_batch)
+    else: # dims == 3 -> is a grid batch
+        readouts = [call(grid) for grid in grid_or_batch]
+        return torch.cat([r.unsqueeze(0) for r in readouts], 0)
     
 
