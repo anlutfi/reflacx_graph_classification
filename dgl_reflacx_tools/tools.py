@@ -83,44 +83,35 @@ def gridify(g,
     return result
 
 
-# TODO decide shape of return
 def grid_readout(grid,
                  name,
                  aggr=dgl.mean_nodes,
-                 replace_nan=True,
-                 leaf_class_name='DGLGraph'):
+                 replace_nan=True):
     result = None
     for line in grid:
         result_line = None
         for sg in line:
             readout = aggr(sg, name)
             # if a subgraph for a grid cell is empty (0 nodes)
-            if replace_nan and torch.any(readout.isnan()): # TODO batched graphs could have individual NaNs: check to see if this solution preserves grads
-                readout = torch.zeros_like(readout)
+            if replace_nan and torch.any(readout.isnan()):
+                readout = list(torch.split(readout, 1))
+                for i, sg_readout in enumerate(readout):
+                    if torch.all(sg_readout.isnan()):
+                        readout[i] = torch.zeros_like(sg_readout)
+                readout = torch.cat(readout)
             
+            readout = readout.unsqueeze(1)
             if result_line is None:
                 result_line = readout
             else:
-                result_line = torch.cat((result_line,readout), 0)
+                result_line = torch.cat((result_line, readout), 1)
         
-        result_line = result_line.unsqueeze(0)
+        result_line = result_line.unsqueeze(1)
         if result is None:
             result = result_line
         else:
-            result = torch.cat((result, result_line), 0)
+            result = torch.cat((result, result_line), 1)
 
     return result
-    
-    dims = 0
-    g = grid_or_batch
-    while g.__class__.__name__ != leaf_class_name:
-        g = g[0]
-        dims += 1
-
-    if dims == 2: # is a single grid
-        return call(grid_or_batch)
-    else: # dims == 3 -> is a grid batch
-        readouts = [call(grid) for grid in grid_or_batch]
-        return torch.cat([r.unsqueeze(0) for r in readouts], 0)
     
 
