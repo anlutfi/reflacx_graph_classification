@@ -49,24 +49,38 @@ def gridify(g,
     batch_ys = (g.ndata[y_nm] * gridsize).int()
     batch_xs[torch.where(batch_xs > gridsize - 1)] = gridsize - 1
     batch_ys[torch.where(batch_ys > gridsize - 1)] = gridsize - 1
+    n_tail = torch.cumsum(g.batch_num_nodes(), dim=0) - 1
+    n_head = torch.cat([torch.tensor([0]).to(n_tail.device), n_tail[:-1] + 1])
     
     result = []
-    offset = 0
-    for xs, ys in zip(torch.split(batch_xs, tuple(g.batch_num_nodes())),
-                      torch.split(batch_ys, tuple(g.batch_num_nodes()))):
-        grid = []
-        for i in range(gridsize):
-            line = []
-            grid.append(line)
-            for j in range(gridsize):
-                yis = torch.where(ys == j)[0]
-                xis = torch.where(xs[yis] == i)
-                nis = yis[xis] + offset
-                line.append(g.subgraph(nis))
-        result.append(grid)
-        offset += len(xs)
+    for i in range(gridsize):
+        line = []
+        result.append(line)
+        for j in range(gridsize):
+            yis = torch.where(batch_ys == j)[0]
+            xis = torch.where(batch_xs[yis] == i)
+            nis = yis[xis]
+            sg = g.subgraph(nis)
+            
+            #preserving NODE batch info for new subgraph
+            nis = nis.unsqueeze(1).tile((1, len(n_tail)))
+            mask = (nis >= n_head) & (nis <= n_tail)
+            bnn = torch.count_nonzero(mask, dim=0)
+            sg.set_batch_num_nodes(bnn)
+
+            #preserving EDGE batch info for new subgraph
+            e_tail = torch.cumsum(bnn, dim=0) - 1
+            e_head = torch.cat([torch.tensor([0]).to(e_tail.device), e_tail[:-1] + 1])
+            source, dest = sg.edges()
+            source = source.unsqueeze(1).tile((1, len(e_tail)))
+            dest = dest.unsqueeze(1).tile((1, len(e_tail)))
+            mask = (source >= e_head) & (source <= e_tail) & (dest >= e_head) & (dest <= e_tail)
+            bne = torch.count_nonzero(mask, dim=0)
+            sg.set_batch_num_edges(bne)
+
+            line.append(sg)
     
-    return result if len(result) > 1 else result[0]
+    return result
 
 
 def grid_readout(grid_or_batch,
