@@ -41,16 +41,14 @@ def get_connected_component(adj, start=0):
     return set(result)
 
 
-def gridify(g,
-            gridsize,
-            x_nm='norm_x',
-            y_nm='norm_y'):
+def gridify_indices(g,
+                    gridsize,
+                    x_nm='norm_x',
+                    y_nm='norm_y'):
     batch_xs = (g.ndata[x_nm] * gridsize).int()
     batch_ys = (g.ndata[y_nm] * gridsize).int()
     batch_xs[torch.where(batch_xs > gridsize - 1)] = gridsize - 1
     batch_ys[torch.where(batch_ys > gridsize - 1)] = gridsize - 1
-    n_tail = torch.cumsum(g.batch_num_nodes(), dim=0) - 1
-    n_head = torch.cat([torch.tensor([0]).to(n_tail.device), n_tail[:-1] + 1])
     
     result = []
     for i in range(gridsize):
@@ -60,8 +58,23 @@ def gridify(g,
             yis = torch.where(batch_ys == j)[0]
             xis = torch.where(batch_xs[yis] == i)
             nis = yis[xis]
+            line.append(nis)
+    
+    return result
+
+
+def gridify_by_indices(g,
+                       indices):
+    n_tail = torch.cumsum(g.batch_num_nodes(), dim=0) - 1
+    n_head = torch.cat([torch.tensor([0]).to(n_tail.device), n_tail[:-1] + 1])
+    
+    result = []
+    for i, i_line in enumerate(indices):
+        line = []
+        result.append(line)
+        for j, nis in enumerate(i_line):
+
             sg = g.subgraph(nis)
-            
             #preserving NODE batch info for new subgraph
             nis = nis.unsqueeze(1).tile((1, len(n_tail)))
             mask = (nis >= n_head) & (nis <= n_tail)
@@ -82,6 +95,14 @@ def gridify(g,
     
     return result
 
+
+def gridify(g,
+            gridsize,
+            x_nm='norm_x',
+            y_nm='norm_y'):
+    indices = gridify_indices(g, gridsize, x_nm, y_nm)
+    return indices, gridify_by_indices(g, indices)
+    
 
 def grid_readout(grid,
                  name,
