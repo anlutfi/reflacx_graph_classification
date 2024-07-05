@@ -136,3 +136,24 @@ def grid_readout(grid,
     return result
     
 
+class Readout:
+    def __init__(self, feats_and_aggrs, replace_nan=True):
+        self.replace_nan = replace_nan
+        self.readouts = []
+        for feat_nm, aggr in feats_and_aggrs:
+            self.readouts.append(lambda grid,
+                                        f=feat_nm,
+                                        a=aggr,
+                                        r=replace_nan: grid_readout(grid, f, a, r))
+            
+    def __call__(self, grid, flatten=True):
+        result = None
+        for readout in self.readouts:
+            ro = readout(grid)
+            if ro.dim() < 4:
+                ro = ro.unsqueeze(-1)
+            if result is None:
+                result = ro
+            else:
+                result = torch.cat([result, ro], dim=-1)
+        return result if not flatten else result.flatten(1, -1)
