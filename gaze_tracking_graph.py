@@ -111,6 +111,10 @@ class GazeTrackingGraph:
         return GazeTrackingGraph.edge_type_names
     
     
+    def is_empty(self):
+        return len(self.nodes) == 0
+    
+    
     def calc_edge(self):
         """Classes inheriting GazeTrackingGraph need
         to fill a adjacency matrix (self.adj_mat).

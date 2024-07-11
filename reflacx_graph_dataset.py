@@ -112,6 +112,8 @@ def generate_csv_dataset(name,
                                     feature_extractor=feature_extractor,
                                     img_features=img_features,
                                     mean_features=mean_features)
+                    if g.is_empty():
+                        continue
                     g_csv.write(curr_line(g.graph_csv(labels='common')))
                     i_csv.write(curr_line(sep.join([dicom_id, reflacx_id])))
                     g.write_nodes_csv(n_csv, curr_line)
