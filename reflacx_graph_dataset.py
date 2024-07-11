@@ -24,7 +24,8 @@ def generate_csv_dataset(name,
                          feature_extractor=DenseFeatureExtractor(),
                          mean_normalize_features=True,
                          mean_features_fpath=None,
-                         log_dir='.'):
+                         log_dir='.',
+                         exclude_empty_graphs=True):
     log = RLogger(__name__)
     
     outdir = '{}/{}'.format('.' if outdir is None else outdir, name)
@@ -112,7 +113,7 @@ def generate_csv_dataset(name,
                                     feature_extractor=feature_extractor,
                                     img_features=img_features,
                                     mean_features=mean_features)
-                    if g.is_empty():
+                    if exclude_empty_graphs and g.is_empty():
                         continue
                     g_csv.write(curr_line(g.graph_csv(labels='common')))
                     i_csv.write(curr_line(sep.join([dicom_id, reflacx_id])))
