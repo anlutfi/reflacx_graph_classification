@@ -1,10 +1,10 @@
 import numpy as np
 import torch
 from feature_extraction.dense_feature_extraction import DenseFeatureExtractor
-from gaze_tracking_graph import GazeTrackingGraph
+from gaze_graphs.gaze_tracking_graph import GazeTrackingGraph
 from rlogger import RLogger
 import os
-from fixation_node import FixationNode
+from gaze_graphs.fixation_node import FixationNode
 
 from consts import CSV_SEP
 
