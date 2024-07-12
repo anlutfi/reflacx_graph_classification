@@ -23,6 +23,7 @@ class RegularizationPipeline:
                                                               feat_nm,
                                                               'edges')
 
+
     def __call__(self, g):
         for k in self.node_regularizers:
             g.ndata[k] = self.node_regularizers[k](g)
