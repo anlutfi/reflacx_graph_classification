@@ -96,20 +96,16 @@ def grid_readout(grid,
     return result
     
 
-class Readout:
+class ReadoutPipeline:
     def __init__(self, feats_and_aggrs, replace_nan=True):
         self.replace_nan = replace_nan
-        self.readouts = []
-        for feat_nm, aggr in feats_and_aggrs:
-            self.readouts.append(lambda grid,
-                                        f=feat_nm,
-                                        a=aggr,
-                                        r=replace_nan: grid_readout(grid, f, a, r))
-            
+        self.feats_and_aggrs = feats_and_aggrs
+
+
     def __call__(self, grid, flatten=True):
         result = None
-        for readout in self.readouts:
-            ro = readout(grid)
+        for feat_nm, aggr in self.feats_and_aggrs:
+            ro = grid_readout(grid, feat_nm, aggr, self.replace_nan)
             if ro.dim() < 4:
                 ro = ro.unsqueeze(-1)
             if result is None:
