@@ -1,11 +1,11 @@
 from feature_extraction.dense_feature_extraction import DenseFeatureExtractor
-from fixation_node import FixationNode
+from gaze_graphs.fixation_node import FixationNode
 from pyvis.network import Network
 from os.path import sep
 
 from rlogger import RLogger
 from reflacx_labels import PHASE_1_LABELS, PHASE_2_3_LABELS
-import label_regularization as lr
+import gaze_graphs.label_regularization as lr
 from consts import CSV_SEP, FIX_OUT_OF_CHEST
 
 class GazeTrackingGraph:
