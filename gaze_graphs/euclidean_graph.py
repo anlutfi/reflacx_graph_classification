@@ -1,7 +1,7 @@
 import numpy as np
 
 from feature_extraction.dense_feature_extraction import DenseFeatureExtractor
-from gaze_tracking_graph import GazeTrackingGraph
+from gaze_graphs.gaze_tracking_graph import GazeTrackingGraph
 
 
 class EuclideanGraph(GazeTrackingGraph):
