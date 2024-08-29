@@ -1,0 +1,21 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Lutfi_REFLACX_graph_classification
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Antonio
+    family-names: Nascimento Lutfi
+    email: lutfi@usp.br
+    affiliation: ICMC-USP
+    orcid: 'https://orcid.org/0000-0003-3893-0898'
+  - orcid: 'https://orcid.org/0000-0003-1745-1177'
+    given-names: João
+    family-names: do Espirito Santo Batista Neto
+    email: jbatista@icmc.usp.br
+    affiliation: ICMC-USP
+repository-code: 'https://github.com/anlutfi/reflacx_graph_classification'
